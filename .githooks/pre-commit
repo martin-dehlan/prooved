@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Block commits that contain secrets.
+# Requires gitleaks: `brew install gitleaks`
+
+set -e
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "gitleaks not installed. Install with: brew install gitleaks" >&2
+  exit 1
+fi
+
+gitleaks protect --staged --redact --no-banner -v
