@@ -8,6 +8,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/register?redirect=/dashboard');
 
+  const { data: appUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (!appUser) redirect('/register?redirect=/dashboard');
+
   return (
     <div className="min-h-full">
       <header className="border-b border-zinc-200 bg-white">
