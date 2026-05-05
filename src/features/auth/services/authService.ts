@@ -2,12 +2,12 @@ import { supabase } from '@/shared/lib/supabase/client';
 import type { AppUser } from '@/features/auth/types/auth.types';
 
 export async function sendMagicLink(email: string, redirectTo?: string) {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const next = redirectTo ?? '/dashboard';
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo:
-        redirectTo ??
-        `${typeof window !== 'undefined' ? window.location.origin : ''}/dashboard`,
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
   if (error) throw error;
