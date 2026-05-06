@@ -70,7 +70,7 @@ export function ConnectionList() {
           href={`/${appUser.slug}`}
           className="font-mono text-zinc-900 underline"
         >
-          prooved.de/{appUser.slug}
+          {typeof window !== 'undefined' ? window.location.host : ''}/{appUser.slug}
         </Link>
       </div>
     </div>
