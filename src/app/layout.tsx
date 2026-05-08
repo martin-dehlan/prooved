@@ -12,13 +12,27 @@ export const metadata: Metadata = {
     'Bündele eBay-, PayPal-, Vinted- und Kleinanzeigen-Bewertungen in einem verifizierten Profil.',
 };
 
+// Inline script applied before first paint to avoid theme flash.
+// Reads localStorage; defaults to dark.
+const themeBootstrap = `
+(function () {
+  try {
+    var t = localStorage.getItem('prooved-theme');
+    if (t === 'light') document.documentElement.classList.add('light');
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="de"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-white text-zinc-900">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
+      </head>
+      <body className="flex min-h-full flex-col bg-bg text-text">
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

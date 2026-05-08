@@ -5,6 +5,7 @@ import {
   listMyConnections,
   refreshConnection,
   deleteConnection,
+  setConnectionVisibility,
 } from '@/features/connections/services/connectionService';
 
 export function useConnections(userId: string | null) {
@@ -19,6 +20,23 @@ export function useRefreshConnection(userId: string | null) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: refreshConnection,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['connections', userId] });
+    },
+  });
+}
+
+type VisibilityArg = {
+  id: string;
+  hidden?: boolean;
+  show_name?: boolean;
+  show_picture?: boolean;
+};
+
+export function useSetVisibility(userId: string | null) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...patch }: VisibilityArg) => setConnectionVisibility(id, patch),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['connections', userId] });
     },

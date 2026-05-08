@@ -41,7 +41,7 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
     return (
       <Card>
         <CardContent>
-          <p className="text-sm text-emerald-700">
+          <p className="text-sm text-accent">
             Danke. Deine Meldung wurde übermittelt und wird geprüft.
           </p>
         </CardContent>
@@ -59,7 +59,7 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
             <select
               id="reason"
               {...register('reason')}
-              className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm"
+              className="flex h-10 w-full rounded-md border border-elevated bg-surface px-3 text-sm"
             >
               {REPORT_REASONS.map((r) => (
                 <option key={r} value={r}>
@@ -68,7 +68,7 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
               ))}
             </select>
             {errors.reason && (
-              <p className="text-xs text-red-600">{errors.reason.message}</p>
+              <p className="text-xs text-danger">{errors.reason.message}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -77,14 +77,14 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
               id="evidence"
               {...register('evidence')}
               rows={5}
-              className="w-full rounded-md border border-zinc-300 p-3 text-sm"
+              className="w-full rounded-md border border-elevated p-3 text-sm"
               placeholder="Transaktionsnachweis, Screenshot-Link, etc."
             />
             {errors.evidence && (
-              <p className="text-xs text-red-600">{errors.evidence.message}</p>
+              <p className="text-xs text-danger">{errors.evidence.message}</p>
             )}
           </div>
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? 'Sende…' : 'Melden'}
           </Button>

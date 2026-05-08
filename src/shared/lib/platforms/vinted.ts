@@ -1,54 +1,69 @@
-// Source: Vinted public API (unofficial). Bio-Code lookup in user.about field.
-// fragile — Vinted may rate-limit or change shape.
+// Source: Vinted public profile HTML (api/v2/users is blocked publicly).
+// User data is embedded as escaped JSON inside the rendered HTML.
+// FRAGILE — markup may change without notice.
 
 import type { PlatformAdapter, PlatformProfile } from '@/shared/types/platform.types';
 
-const UA = 'Prooved/1.0 (+https://prooved.de)';
+const UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 ' +
+  '(KHTML, like Gecko) Version/17.0 Safari/605.1.15';
 
 export function extractVintedUserIdFromUrl(url: string): string | null {
-  // https://www.vinted.de/member/12345678-handle
+  // https://www.vinted.de/member/12345678[-handle]
   const m = url.match(/\/member\/(\d+)/);
   return m ? m[1]! : null;
 }
 
-export async function fetchVintedUser(userId: string): Promise<{
-  about: string;
+interface VintedScrape {
+  html: string;
   url: string;
   ratingScore: number | null;
   ratingCount: number | null;
+  positiveCount: number | null;
+  negativeCount: number | null;
   memberSince: string | null;
-}> {
-  const res = await fetch(`https://www.vinted.de/api/v2/users/${userId}`, {
+}
+
+export async function scrapeVintedProfile(userId: string): Promise<VintedScrape> {
+  const url = `https://www.vinted.de/member/${userId}`;
+  const res = await fetch(url, {
     method: 'GET',
-    signal: AbortSignal.timeout(5000),
-    headers: { 'User-Agent': UA, Accept: 'application/json' },
+    signal: AbortSignal.timeout(8000),
+    headers: {
+      'User-Agent': UA,
+      Accept: 'text/html,application/xhtml+xml',
+      'Accept-Language': 'de-DE,de;q=0.9',
+    },
   });
-  if (!res.ok) throw new Error(`Vinted user fetch failed: ${res.status}`);
-  const json = (await res.json()) as {
-    user?: {
-      about?: string | null;
-      profile_url?: string;
-      feedback_reputation?: number | null;
-      feedback_count?: number | null;
-      created_at?: string;
-    };
-  };
-  const u = json.user ?? {};
+  if (!res.ok) throw new Error(`Vinted profile fetch failed: ${res.status}`);
+  const html = await res.text();
+
+  // Embedded JSON is double-escaped (e.g. \"feedback_count\":4)
+  const reputation = Number(html.match(/\\"feedback_reputation\\":([\d.]+)/)?.[1] ?? 'NaN');
+  const count = Number(html.match(/\\"feedback_count\\":(\d+)/)?.[1] ?? 'NaN');
+  const positive = Number(html.match(/\\"positive_feedback_count\\":(\d+)/)?.[1] ?? 'NaN');
+  const negative = Number(html.match(/\\"negative_feedback_count\\":(\d+)/)?.[1] ?? 'NaN');
+  const createdAt = html.match(/\\"created_at\\":(\d+)/)?.[1] ?? null;
+
   return {
-    about: u.about ?? '',
-    url: u.profile_url ?? `https://www.vinted.de/member/${userId}`,
-    ratingScore: typeof u.feedback_reputation === 'number' ? u.feedback_reputation * 5 : null,
-    ratingCount: u.feedback_count ?? null,
-    memberSince: u.created_at ?? null,
+    html,
+    url,
+    ratingScore: Number.isFinite(reputation)
+      ? Math.round(reputation * 5 * 10) / 10
+      : null,
+    ratingCount: Number.isFinite(count) ? count : null,
+    positiveCount: Number.isFinite(positive) ? positive : null,
+    negativeCount: Number.isFinite(negative) ? negative : null,
+    memberSince: createdAt ? new Date(Number(createdAt) * 1000).toISOString() : null,
   };
 }
 
-export async function vintedBioContainsCode(userId: string, code: string): Promise<{
-  matched: boolean;
-  profile: PlatformProfile;
-}> {
-  const data = await fetchVintedUser(userId);
-  const matched = data.about.includes(code);
+export async function vintedBioContainsCode(
+  userId: string,
+  code: string,
+): Promise<{ matched: boolean; profile: PlatformProfile }> {
+  const data = await scrapeVintedProfile(userId);
+  const matched = data.html.includes(code);
   return {
     matched,
     profile: {
@@ -56,8 +71,8 @@ export async function vintedBioContainsCode(userId: string, code: string): Promi
       url: data.url,
       ratingScore: data.ratingScore,
       ratingCount: data.ratingCount,
-      positiveCount: null,
-      negativeCount: null,
+      positiveCount: data.positiveCount,
+      negativeCount: data.negativeCount,
       memberSince: data.memberSince,
     },
   };
@@ -70,14 +85,14 @@ export const vintedAdapter: PlatformAdapter = {
   async fetchProfile({ url, userId }) {
     const id = userId ?? (url ? extractVintedUserIdFromUrl(url) : null);
     if (!id) throw new Error('Vinted requires user id or member url');
-    const data = await fetchVintedUser(id);
+    const data = await scrapeVintedProfile(id);
     return {
       platformUserId: id,
       url: data.url,
       ratingScore: data.ratingScore,
       ratingCount: data.ratingCount,
-      positiveCount: null,
-      negativeCount: null,
+      positiveCount: data.positiveCount,
+      negativeCount: data.negativeCount,
       memberSince: data.memberSince,
     };
   },

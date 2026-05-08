@@ -1,54 +1,73 @@
+import Link from 'next/link';
 import { ExportButton } from '@/features/export';
 
 export const metadata = { title: 'Datenschutz — Prooved' };
 
 export default function PrivacyPage() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Datenkontrolle</h1>
+    <div className="space-y-8">
+      <Link
+        href="/dashboard"
+        className="text-sm font-medium text-muted hover:text-text"
+      >
+        ← Zurück
+      </Link>
 
-      <section className="space-y-2">
-        <h2 className="font-medium">Welche Daten wir speichern</h2>
-        <ul className="list-disc space-y-1 pl-6 text-sm text-zinc-700">
-          <li>E-Mail (für Login + Re-Verifizierungs-Reminder)</li>
-          <li>Slug + Name (öffentlich auf deinem Profil)</li>
-          <li>Verknüpfte Plattform-IDs + verschlüsselte Access-Tokens</li>
-          <li>Gecachte Bewertungs-Statistiken (rating_score, count, member_since)</li>
-          <li>Optional: Wallet-Adresse + Signatur-Proof</li>
+      <h1 className="text-2xl font-bold tracking-tight text-text">
+        Datenkontrolle
+      </h1>
+
+      <Section title="Welche Daten wir speichern">
+        <ul className="space-y-1 text-sm text-text">
+          <li>• E-Mail (Login + Reminder)</li>
+          <li>• Slug + Name (öffentlich auf deinem Profil)</li>
+          <li>• Plattform-IDs + verschlüsselte Tokens</li>
+          <li>• Gecachte Bewertungs-Statistiken</li>
+          <li>• Optional: Wallet-Adresse</li>
         </ul>
-      </section>
+      </Section>
 
-      <section className="space-y-2">
-        <h2 className="font-medium">Daten exportieren</h2>
-        <p className="text-sm text-zinc-600">
-          Signiertes JSON aller deiner Verknüpfungen. Du kannst es archivieren
-          und ohne Prooved verifizieren (Ed25519 Signatur).
+      <Section title="Daten exportieren">
+        <p className="text-sm text-muted">
+          Signiertes JSON. Du kannst es archivieren und ohne Prooved verifizieren
+          (Ed25519).
         </p>
-        <ExportButton />
-      </section>
+        <div className="mt-3">
+          <ExportButton />
+        </div>
+      </Section>
 
-      <section className="space-y-2">
-        <h2 className="font-medium">Wallet trennen</h2>
-        <p className="text-sm text-zinc-600">
-          Entfernt deine Wallet-Verknüpfung. SBTs in der Wallet bleiben unangetastet.
+      <Section title="Wallet trennen">
+        <p className="text-sm text-muted">
+          Entfernt deine Wallet-Verknüpfung. SBTs in der Wallet bleiben.
         </p>
-        <form action="/api/wallet/disconnect" method="post">
-          <button className="text-sm text-red-600 underline">Wallet trennen</button>
+        <form action="/api/wallet/disconnect" method="post" className="mt-3">
+          <button className="text-sm font-semibold text-danger hover:underline">
+            Wallet trennen
+          </button>
         </form>
-      </section>
+      </Section>
 
-      <section className="space-y-2">
-        <h2 className="font-medium">Account löschen (DSGVO)</h2>
-        <p className="text-sm text-zinc-600">
-          Löscht deinen Prooved-Account inkl. Verbindungen und Reports. On-chain
-          gemintete SBTs bleiben in deiner Wallet (Blockchain ist immutable).
+      <Section title="Account löschen (DSGVO)">
+        <p className="text-sm text-muted">
+          Löscht Account inkl. Verbindungen und Reports. On-chain SBTs bleiben in
+          deiner Wallet.
         </p>
-        <form action="/api/account/delete" method="post">
-          <button className="text-sm text-red-600 underline">
+        <form action="/api/account/delete" method="post" className="mt-3">
+          <button className="text-sm font-semibold text-danger hover:underline">
             Account permanent löschen
           </button>
         </form>
-      </section>
+      </Section>
     </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-elevated bg-surface p-5">
+      <h2 className="text-base font-semibold text-text">{title}</h2>
+      <div className="mt-3">{children}</div>
+    </section>
   );
 }

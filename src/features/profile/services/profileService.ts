@@ -7,7 +7,17 @@ export type PublicProfile = {
   connections: Connection[];
 };
 
+export type ProfileLookup =
+  | { kind: 'ok'; data: PublicProfile }
+  | { kind: 'suspended'; slug: string }
+  | { kind: 'not_found' };
+
 export async function getPublicProfile(slug: string): Promise<PublicProfile | null> {
+  const result = await lookupProfile(slug);
+  return result.kind === 'ok' ? result.data : null;
+}
+
+export async function lookupProfile(slug: string): Promise<ProfileLookup> {
   const supabase = await createSupabaseServer();
 
   const { data: user, error: userErr } = await supabase
@@ -15,15 +25,16 @@ export async function getPublicProfile(slug: string): Promise<PublicProfile | nu
     .select('*')
     .eq('slug', slug)
     .maybeSingle();
-  if (userErr || !user) return null;
-  if (user.suspended_at) return null;
+  if (userErr || !user) return { kind: 'not_found' };
+  if (user.suspended_at) return { kind: 'suspended', slug };
 
   const { data: connections, error: connErr } = await supabase
     .from('connections')
     .select('*')
     .eq('user_id', user.id)
+    .eq('hidden', false)
     .not('verified_at', 'is', null);
-  if (connErr) return null;
+  if (connErr) return { kind: 'not_found' };
 
-  return { user, connections: (connections ?? []) as Connection[] };
+  return { kind: 'ok', data: { user, connections: (connections ?? []) as Connection[] } };
 }

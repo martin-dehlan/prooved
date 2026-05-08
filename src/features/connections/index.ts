@@ -13,7 +13,7 @@ export {
   listPublicConnections,
   upsertConnection,
   deleteConnection,
-  startBioCodeFlow,
+  getBioCode,
   verifyBioCode,
   refreshConnection,
 } from './services/connectionService';
@@ -25,6 +25,5 @@ export type {
 export { deriveStatus } from './types/connection.types';
 export {
   platformSchema,
-  startBioCodeFlowSchema,
   verifyBioCodeSchema,
 } from './types/connection.schemas';

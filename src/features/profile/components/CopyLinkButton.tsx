@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/shared/components/ui';
 
 export function CopyLinkButton({ slug }: { slug: string }) {
   const [copied, setCopied] = useState(false);
@@ -19,8 +18,11 @@ export function CopyLinkButton({ slug }: { slug: string }) {
   }
 
   return (
-    <Button size="sm" variant="outline" onClick={copy}>
-      {copied ? '✓ Kopiert' : 'Link kopieren'}
-    </Button>
+    <button
+      onClick={copy}
+      className="inline-flex h-11 items-center gap-2 rounded-full bg-text px-5 text-sm font-semibold text-bg transition hover:opacity-90 active:scale-[0.98]"
+    >
+      {copied ? '✓ Kopiert' : 'Profil-Link kopieren'}
+    </button>
   );
 }

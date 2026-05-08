@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { exchangeEbayCode, fetchEbayFeedback } from '@/shared/lib/platforms/ebay';
 import { createSupabaseAdmin } from '@/shared/lib/supabase/server';
 import { encrypt } from '@/shared/lib/crypto';
+import { notifyUserOfNewConnection } from '@/shared/lib/email/notify';
 import { cookies } from 'next/headers';
 
 export async function GET(req: Request) {
@@ -22,7 +23,10 @@ export async function GET(req: Request) {
     const profile = await fetchEbayFeedback(tokens.access_token);
     const supabase = createSupabaseAdmin();
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + tokens.expires_in * 1000).toISOString();
+    // Connection validity = refresh_token TTL (sandbox ~18mo, live ~18mo).
+    // access_token TTL is short and silently refreshed when stale.
+    const refreshTtl = tokens.refresh_token_expires_in ?? 365 * 24 * 60 * 60;
+    const expiresAt = new Date(now.getTime() + refreshTtl * 1000).toISOString();
 
     await supabase.from('connections').upsert(
       {
@@ -46,6 +50,7 @@ export async function GET(req: Request) {
       { onConflict: 'user_id,platform' },
     );
 
+    void notifyUserOfNewConnection({ userId, platform: 'eBay' });
     return NextResponse.redirect(new URL('/dashboard', process.env.NEXT_PUBLIC_APP_URL ?? url.origin));
   } catch (e) {
     return NextResponse.json(

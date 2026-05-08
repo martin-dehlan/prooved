@@ -47,41 +47,63 @@ export function SlugOnboardingForm({
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Anzeigename (optional)</Label>
-        <Input id="name" placeholder="Max Mustermann" {...register('name')} />
-        {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="slug">Profil-Adresse</Label>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-zinc-500">prooved.de/</span>
-          <Input id="slug" placeholder="max-mustermann" {...register('slug')} />
-        </div>
-        <SlugStatus status={status} />
-        {errors.slug && <p className="text-xs text-red-600">{errors.slug.message}</p>}
-        <p className="text-xs text-zinc-500">
-          Achtung: dein Profil-Slug ist nach dem Anlegen nicht mehr änderbar.
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold tracking-tight text-text">
+          Profil einrichten
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          Wähle deine Profil-Adresse. Sie ist später nicht mehr änderbar.
         </p>
       </div>
-      <Button type="submit" disabled={isSubmitting || status !== 'available'} className="w-full">
-        {isSubmitting ? 'Lege an…' : 'Profil anlegen'}
-      </Button>
-    </form>
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Anzeigename (optional)</Label>
+          <Input id="name" placeholder="Max Mustermann" {...register('name')} />
+          {errors.name && <p className="text-sm text-danger">{errors.name.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="slug">Profil-Adresse</Label>
+          <div className="flex h-12 items-stretch overflow-hidden rounded-xl border border-elevated bg-surface focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2">
+            <span className="flex items-center bg-elevated px-3 text-sm font-medium text-muted">
+              prooved.de/
+            </span>
+            <input
+              id="slug"
+              placeholder="max-mustermann"
+              className="flex-1 bg-transparent px-3 text-base text-text outline-none placeholder:text-muted"
+              {...register('slug')}
+            />
+          </div>
+          <SlugStatus status={status} />
+          {errors.slug && <p className="text-sm text-danger">{errors.slug.message}</p>}
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting || status !== 'available'}
+          block
+          size="lg"
+        >
+          {isSubmitting ? 'Lege an…' : 'Profil anlegen'}
+        </Button>
+      </form>
+    </div>
   );
 }
 
 function SlugStatus({ status }: { status: ReturnType<typeof useSlugAvailability> }) {
   const map: Record<typeof status, { text: string; cls: string }> = {
-    idle:      { text: '',                               cls: '' },
-    invalid:   { text: 'Ungültiges Format',              cls: 'text-red-600' },
-    reserved:  { text: 'Reserviert',                     cls: 'text-red-600' },
-    checking:  { text: 'Prüfe Verfügbarkeit…',           cls: 'text-zinc-500' },
-    available: { text: '✓ Verfügbar',                    cls: 'text-emerald-600' },
-    taken:     { text: 'Bereits vergeben',               cls: 'text-red-600' },
-    error:     { text: 'Verfügbarkeit konnte nicht geprüft werden', cls: 'text-red-600' },
+    idle:      { text: '',                                            cls: '' },
+    invalid:   { text: 'Ungültig — nur a-z, 0-9, Bindestrich',         cls: 'text-danger' },
+    reserved:  { text: 'Reserviert',                                   cls: 'text-danger' },
+    checking:  { text: 'Prüfe…',                                       cls: 'text-muted' },
+    available: { text: '✓ Verfügbar',                                  cls: 'text-accent' },
+    taken:     { text: 'Bereits vergeben',                             cls: 'text-danger' },
+    error:     { text: 'Verfügbarkeit nicht prüfbar',                  cls: 'text-danger' },
   };
   const { text, cls } = map[status];
-  return text ? <p className={`text-xs ${cls}`}>{text}</p> : null;
+  return text ? <p className={`text-sm ${cls}`}>{text}</p> : null;
 }

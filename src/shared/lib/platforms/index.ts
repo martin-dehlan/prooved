@@ -3,12 +3,38 @@ import { ebayAdapter } from './ebay';
 import { paypalAdapter } from './paypal';
 import { vintedAdapter } from './vinted';
 import { kleinanzeigenAdapter } from './kleinanzeigen';
+import { websiteAdapter } from './website';
+import { etsyAdapter } from './etsy';
+import { githubAdapter } from './github';
+import { linkedinAdapter } from './linkedin';
+import { discogsAdapter } from './discogs';
+import { willhabenAdapter } from './willhaben';
+import { shpockAdapter } from './shpock';
 
 export const ADAPTERS: Record<Platform, PlatformAdapter> = {
   ebay: ebayAdapter,
   paypal: paypalAdapter,
   vinted: vintedAdapter,
   kleinanzeigen: kleinanzeigenAdapter,
+  website: websiteAdapter,
+  etsy: etsyAdapter,
+  github: githubAdapter,
+  linkedin: linkedinAdapter,
+  discogs: discogsAdapter,
+  willhaben: willhabenAdapter,
+  shpock: shpockAdapter,
 };
 
-export { ebayAdapter, paypalAdapter, vintedAdapter, kleinanzeigenAdapter };
+export {
+  ebayAdapter,
+  paypalAdapter,
+  vintedAdapter,
+  kleinanzeigenAdapter,
+  websiteAdapter,
+  etsyAdapter,
+  githubAdapter,
+  linkedinAdapter,
+  discogsAdapter,
+  willhabenAdapter,
+  shpockAdapter,
+};

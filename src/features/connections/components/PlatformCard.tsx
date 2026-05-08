@@ -35,7 +35,7 @@ export function PlatformCard({ connection }: { connection: Connection }) {
           count={connection.rating_count}
         />
         {connection.verified_at && (
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-muted">
             Quelle: {connection.platform}, verifiziert am{' '}
             {new Date(connection.verified_at).toLocaleDateString('de-DE')}
           </p>

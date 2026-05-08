@@ -1,69 +1,166 @@
-// Source: Kleinanzeigen.de public profile HTML (no official API).
-// FRAGILE DEPENDENCY — markup may change without notice.
-// On parse failure we return ratingScore: null and connection is marked
-// "temporarily_unavailable" upstream.
+// Source: Kleinanzeigen.de public HTML (no official API).
+// Profile pages have NO bio field — code goes in a listing (title or description).
+// We accept either a listing URL (s-anzeige/...) or profile URL (s-bestandsliste/pro).
+// FRAGILE — markup may change.
 
 import type { PlatformAdapter, PlatformProfile } from '@/shared/types/platform.types';
 
-const UA = 'Mozilla/5.0 (compatible; Prooved/1.0; +https://prooved.de)';
+const UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 ' +
+  '(KHTML, like Gecko) Version/17.0 Safari/605.1.15';
 
-export function extractKleinanzeigenIdFromUrl(url: string): string | null {
-  // https://www.kleinanzeigen.de/pro/<id> or /s-bestandsliste.html?userId=<id>
-  const m1 = url.match(/\/pro\/([a-zA-Z0-9-]+)/);
-  if (m1) return m1[1]!;
-  const m2 = url.match(/userId=([a-zA-Z0-9-]+)/);
-  if (m2) return m2[1]!;
-  return null;
+const BASE = 'https://www.kleinanzeigen.de';
+
+type SourceKind = 'listing' | 'bestandsliste' | 'pro';
+
+export interface KleinanzeigenSource {
+  kind: SourceKind;
+  url: string;
+  userId: string;
 }
 
-interface ScrapeResult {
-  about: string;
+function isNumeric(id: string): boolean {
+  return /^\d+$/.test(id);
+}
+
+function extractUserIdFromHtml(html: string): string | null {
+  return (
+    html.match(/userId=(\d+)/)?.[1] ??
+    html.match(/"userId"\s*:\s*"?(\d+)/)?.[1] ??
+    html.match(/data-user-id="(\d+)"/)?.[1] ??
+    null
+  );
+}
+
+async function fetchHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    method: 'GET',
+    signal: AbortSignal.timeout(8000),
+    headers: {
+      'User-Agent': UA,
+      Accept: 'text/html,application/xhtml+xml',
+      'Accept-Language': 'de-DE,de;q=0.9',
+    },
+  });
+  if (!res.ok) throw new Error(`Kleinanzeigen fetch failed: ${res.status}`);
+  return res.text();
+}
+
+/** Parse user input — supports listing, bestandsliste, or pro URLs. */
+export async function resolveKleinanzeigenSource(
+  rawUrl: string,
+): Promise<KleinanzeigenSource> {
+  const url = rawUrl.trim();
+
+  const userIdMatch = url.match(/userId=(\d+)/);
+  if (userIdMatch) {
+    return {
+      kind: 'bestandsliste',
+      url: `${BASE}/s-bestandsliste.html?userId=${userIdMatch[1]}`,
+      userId: userIdMatch[1]!,
+    };
+  }
+
+  const proMatch = url.match(/\/pro\/([a-zA-Z0-9-]+)/);
+  if (proMatch) {
+    // Pro slugs aren't numeric userIds — fetch page to find the numeric one
+    const html = await fetchHtml(`${BASE}/pro/${encodeURIComponent(proMatch[1]!)}`);
+    const id = extractUserIdFromHtml(html);
+    if (!id) throw new Error('Konnte Verkäufer-ID auf Pro-Profil nicht finden');
+    return {
+      kind: 'pro',
+      url: `${BASE}/pro/${encodeURIComponent(proMatch[1]!)}`,
+      userId: id,
+    };
+  }
+
+  // Listing URL: /s-anzeige/<slug>/<listingId>
+  if (/\/s-anzeige\//.test(url)) {
+    const html = await fetchHtml(url);
+    const id = extractUserIdFromHtml(html);
+    if (!id) throw new Error('Konnte Verkäufer-ID aus Anzeige nicht finden');
+    return { kind: 'listing', url, userId: id };
+  }
+
+  throw new Error(
+    'URL nicht erkannt — gib eine Anzeigen-URL (kleinanzeigen.de/s-anzeige/…) oder Profil-URL (?userId=…) ein',
+  );
+}
+
+interface ProfileScrape {
+  url: string;
   ratingScore: number | null;
   ratingCount: number | null;
   memberSince: string | null;
 }
 
-export async function scrapeKleinanzeigenProfile(userId: string): Promise<ScrapeResult> {
-  const url = `https://www.kleinanzeigen.de/pro/${encodeURIComponent(userId)}`;
-  const res = await fetch(url, {
-    method: 'GET',
-    signal: AbortSignal.timeout(5000),
-    headers: { 'User-Agent': UA, Accept: 'text/html' },
-  });
-  if (!res.ok) throw new Error(`Kleinanzeigen profile fetch failed: ${res.status}`);
-  const html = await res.text();
+/** Scrape bestandsliste for rating data (canonical profile page). */
+export async function scrapeKleinanzeigenProfile(userId: string): Promise<ProfileScrape> {
+  if (!isNumeric(userId)) throw new Error('userId must be numeric for bestandsliste');
+  const url = `${BASE}/s-bestandsliste.html?userId=${userId}`;
+  const html = await fetchHtml(url);
 
-  const ratingScore = Number(html.match(/data-rating-stars="([0-9.]+)"/)?.[1] ?? 'NaN');
+  const ratingScore = Number(
+    html.match(/data-rating-stars="([0-9.]+)"/)?.[1] ??
+      html.match(/(\d(?:[.,]\d)?)\s*\/\s*5\s*Sterne/)?.[1]?.replace(',', '.') ??
+      'NaN',
+  );
   const ratingCount = Number(html.match(/(\d+)\s*Bewertung/)?.[1] ?? 'NaN');
-  const memberSince = html.match(/aktiv seit\s*([0-9.]+)/i)?.[1] ?? null;
-  const aboutMatch = html.match(/<section[^>]*data-about[^>]*>([\s\S]*?)<\/section>/);
-  const about = aboutMatch ? aboutMatch[1]!.replace(/<[^>]+>/g, ' ').trim() : '';
+  const memberSince = html.match(/[Aa]ktiv seit\s*([0-9.]{6,10})/)?.[1] ?? null;
 
   return {
-    about,
+    url,
     ratingScore: Number.isFinite(ratingScore) ? ratingScore : null,
     ratingCount: Number.isFinite(ratingCount) ? ratingCount : null,
     memberSince,
   };
 }
 
-export async function kleinanzeigenBioContainsCode(userId: string, code: string): Promise<{
-  matched: boolean;
-  profile: PlatformProfile;
-}> {
-  const data = await scrapeKleinanzeigenProfile(userId);
+/** Verify code presence on the source URL the user provided. */
+export async function kleinanzeigenSourceContainsCode(
+  source: KleinanzeigenSource,
+  code: string,
+): Promise<{ matched: boolean; profile: PlatformProfile }> {
+  const html = await fetchHtml(source.url);
+  const matched = html.includes(code);
+
+  // On match, also fetch bestandsliste for ratings (canonical profile)
+  let profileScrape: ProfileScrape | null = null;
+  if (matched) {
+    try {
+      profileScrape = await scrapeKleinanzeigenProfile(source.userId);
+    } catch {
+      // bestandsliste might not exist for new sellers — continue without ratings
+    }
+  }
+
   return {
-    matched: data.about.includes(code),
+    matched,
     profile: {
-      platformUserId: userId,
-      url: `https://www.kleinanzeigen.de/pro/${encodeURIComponent(userId)}`,
-      ratingScore: data.ratingScore,
-      ratingCount: data.ratingCount,
+      platformUserId: source.userId,
+      url: profileScrape?.url ?? source.url,
+      ratingScore: profileScrape?.ratingScore ?? null,
+      ratingCount: profileScrape?.ratingCount ?? null,
       positiveCount: null,
       negativeCount: null,
-      memberSince: data.memberSince,
+      memberSince: profileScrape?.memberSince ?? null,
     },
   };
+}
+
+/** Legacy entry by userId — kept for refresh path. */
+export async function kleinanzeigenBioContainsCode(
+  userId: string,
+  code: string,
+): Promise<{ matched: boolean; profile: PlatformProfile }> {
+  return kleinanzeigenSourceContainsCode(
+    {
+      kind: 'bestandsliste',
+      url: `${BASE}/s-bestandsliste.html?userId=${userId}`,
+      userId,
+    },
+    code,
+  );
 }
 
 export const kleinanzeigenAdapter: PlatformAdapter = {
@@ -71,12 +168,12 @@ export const kleinanzeigenAdapter: PlatformAdapter = {
   tier: 'silver',
   method: 'bio_code',
   async fetchProfile({ url, userId }) {
-    const id = userId ?? (url ? extractKleinanzeigenIdFromUrl(url) : null);
-    if (!id) throw new Error('Kleinanzeigen requires user id or pro url');
+    const id = userId ?? (url ? url.match(/userId=(\d+)/)?.[1] : null);
+    if (!id) throw new Error('Kleinanzeigen requires numeric userId');
     const data = await scrapeKleinanzeigenProfile(id);
     return {
       platformUserId: id,
-      url: `https://www.kleinanzeigen.de/pro/${encodeURIComponent(id)}`,
+      url: data.url,
       ratingScore: data.ratingScore,
       ratingCount: data.ratingCount,
       positiveCount: null,
@@ -85,3 +182,8 @@ export const kleinanzeigenAdapter: PlatformAdapter = {
     };
   },
 };
+
+// Backwards-compat export
+export function extractKleinanzeigenIdFromUrl(url: string): string | null {
+  return url.match(/userId=(\d+)/)?.[1] ?? url.match(/\/pro\/([a-zA-Z0-9-]+)/)?.[1] ?? null;
+}

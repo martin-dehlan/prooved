@@ -1,11 +1,14 @@
-import { sha256, randomHex } from '@/shared/lib/crypto';
+import { sha256 } from '@/shared/lib/crypto';
 
-// Bio code format: PR-{userId_hash_5}-{random_5}
-// Cryptographically bound to user — server can verify the prefix matches the userId.
-export function generateBioCode(userId: string): string {
-  const hash = sha256(userId).slice(0, 5);
-  const rand = randomHex(3).slice(0, 5);
-  return `PR-${hash}-${rand}`;
+// Bio code: PR-{userId_hash_5}-{userId_platform_secret_hash_5}
+// Deterministic per (userId, platform) so the same code can be shown to
+// the user before they pick a profile URL — no DB write needed at display time.
+const SECRET_SUFFIX = 'prooved-bio-v1';
+
+export function generateBioCode(userId: string, platform: string): string {
+  const userHash = sha256(userId).slice(0, 5);
+  const platformHash = sha256(`${userId}:${platform}:${SECRET_SUFFIX}`).slice(0, 5);
+  return `PR-${userHash}-${platformHash}`;
 }
 
 export function isValidBioCodeShape(code: string): boolean {

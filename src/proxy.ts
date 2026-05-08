@@ -1,13 +1,39 @@
-import type { NextRequest } from 'next/server';
-import { updateSession } from '@/shared/lib/supabase/middleware';
+import { NextResponse, type NextRequest } from 'next/server';
 
-export async function proxy(request: NextRequest) {
-  return updateSession(request);
+// Security headers — applied to every response.
+// CSP is intentionally not strict-dynamic since we don't have nonces yet;
+// next phase: add per-request nonce + remove unsafe-inline for scripts.
+const SECURITY_HEADERS: [string, string][] = [
+  ['X-Frame-Options', 'DENY'],
+  ['X-Content-Type-Options', 'nosniff'],
+  ['Referrer-Policy', 'strict-origin-when-cross-origin'],
+  ['Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()'],
+  ['Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload'],
+  [
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      // Next + Tailwind inject inline styles + scripts in dev/prod hydration
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data:",
+      // Supabase API + Solana RPC + platform endpoints
+      "connect-src 'self' https://*.supabase.co https://*.supabase.in https://api.ebay.com https://api.sandbox.ebay.com https://api-m.paypal.com https://api-m.sandbox.paypal.com https://openapi.etsy.com https://api.github.com https://api.linkedin.com https://api.devnet.solana.com https://api.mainnet-beta.solana.com",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; '),
+  ],
+];
+
+export function proxy(_req: NextRequest) {
+  const res = NextResponse.next();
+  for (const [k, v] of SECURITY_HEADERS) res.headers.set(k, v);
+  return res;
 }
 
 export const config = {
-  matcher: [
-    // Run on all paths except static assets, images, favicon
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  // Skip static assets + Next internals
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };

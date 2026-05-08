@@ -15,7 +15,7 @@ export function WalletConnectButton() {
           {busy ? 'Verifiziere…' : 'Wallet verifizieren'}
         </Button>
       )}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
     </div>
   );
 }

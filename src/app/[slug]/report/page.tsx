@@ -17,7 +17,7 @@ export default async function ReportPage({ params }: Props) {
       <h1 className="text-xl font-semibold">
         Profil &quot;{data.user.name ?? slug}&quot; melden
       </h1>
-      <p className="text-sm text-zinc-600">
+      <p className="text-sm text-muted">
         Wir prüfen jede Meldung manuell. Spam-Schutz: max. 3 Meldungen pro IP / Tag.
       </p>
       <ReportForm targetSlug={slug} />

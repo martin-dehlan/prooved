@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireUser, getClientIp } from '@/shared/lib/api/requireUser';
-import { verifyBioCodeForConnection } from '@/features/verify';
+import { requireUser } from '@/shared/lib/api/requireUser';
+import { verifyBioCodeBySource } from '@/features/verify';
 import { verifyBioCodeSchema } from '@/features/connections';
 import { rateLimit, RATE_LIMITS } from '@/shared/lib/rate-limit';
 
@@ -22,9 +22,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const result = await verifyBioCodeForConnection({
+  const result = await verifyBioCodeBySource({
     userId: auth.userId,
-    connectionId: parsed.data.connectionId,
+    platform: parsed.data.platform,
+    platformUrl: parsed.data.platformUrl,
   });
   return NextResponse.json(result);
 }

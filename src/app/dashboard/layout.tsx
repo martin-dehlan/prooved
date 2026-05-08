@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createSupabaseServer } from '@/shared/lib/supabase/server';
+import { ThemeToggle } from '@/shared/components/ui/ThemeToggle';
+import { Logo } from '@/shared/components/ui/Logo';
 import { SignOutButton } from './SignOutButton';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -16,21 +18,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!appUser) redirect('/register?redirect=/dashboard');
 
   return (
-    <div className="min-h-full">
-      <header className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <Link href="/dashboard" className="text-base font-semibold">
-            Prooved
+    <div className="min-h-screen bg-bg">
+      <header className="sticky top-0 z-10 border-b border-elevated bg-surface/80 backdrop-blur">
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
+          <Link href="/dashboard" aria-label="Dashboard">
+            <Logo size={28} />
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/dashboard">Übersicht</Link>
-            <Link href="/dashboard/connect">Verknüpfen</Link>
-            <Link href="/dashboard/privacy">Datenschutz</Link>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
             <SignOutButton />
-          </nav>
+          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl p-4 sm:p-6">{children}</main>
+      <main className="mx-auto max-w-2xl px-5 py-8">{children}</main>
     </div>
   );
 }

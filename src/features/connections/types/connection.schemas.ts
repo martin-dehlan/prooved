@@ -1,15 +1,31 @@
 import { z } from 'zod';
 
-export const platformSchema = z.enum(['ebay', 'vinted', 'kleinanzeigen', 'paypal']);
+export const BIOCODE_PLATFORMS = [
+  'vinted',
+  'kleinanzeigen',
+  'discogs',
+  'willhaben',
+  'shpock',
+] as const;
+export type BioCodePlatform = (typeof BIOCODE_PLATFORMS)[number];
 
-export const startBioCodeFlowSchema = z.object({
-  platform: z.enum(['vinted', 'kleinanzeigen']),
-  platformUrl: z.string().url(),
-});
+export const platformSchema = z.enum([
+  'ebay',
+  'vinted',
+  'kleinanzeigen',
+  'paypal',
+  'website',
+  'etsy',
+  'github',
+  'linkedin',
+  'discogs',
+  'willhaben',
+  'shpock',
+]);
 
 export const verifyBioCodeSchema = z.object({
-  connectionId: z.string().uuid(),
+  platform: z.enum(BIOCODE_PLATFORMS),
+  platformUrl: z.string().min(2),
 });
 
-export type StartBioCodeFlowInput = z.infer<typeof startBioCodeFlowSchema>;
 export type VerifyBioCodeInput = z.infer<typeof verifyBioCodeSchema>;

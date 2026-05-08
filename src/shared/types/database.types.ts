@@ -12,38 +12,15 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       connections: {
         Row: {
           created_at: string
           expires_at: string | null
+          hidden: boolean
           id: string
+          last_error: string | null
           last_fetched: string | null
           member_since: string | null
           method: string
@@ -55,16 +32,22 @@ export type Database = {
           positive_count: number | null
           rating_count: number | null
           rating_score: number | null
+          show_name: boolean
+          show_picture: boolean
           signed_payload: string | null
           tier: string
           user_id: string
           verified_at: string | null
+          verified_name: string | null
+          verified_picture_url: string | null
           verify_token: string
         }
         Insert: {
           created_at?: string
           expires_at?: string | null
+          hidden?: boolean
           id?: string
+          last_error?: string | null
           last_fetched?: string | null
           member_since?: string | null
           method: string
@@ -76,16 +59,22 @@ export type Database = {
           positive_count?: number | null
           rating_count?: number | null
           rating_score?: number | null
+          show_name?: boolean
+          show_picture?: boolean
           signed_payload?: string | null
           tier: string
           user_id: string
           verified_at?: string | null
+          verified_name?: string | null
+          verified_picture_url?: string | null
           verify_token: string
         }
         Update: {
           created_at?: string
           expires_at?: string | null
+          hidden?: boolean
           id?: string
+          last_error?: string | null
           last_fetched?: string | null
           member_since?: string | null
           method?: string
@@ -97,10 +86,14 @@ export type Database = {
           positive_count?: number | null
           rating_count?: number | null
           rating_score?: number | null
+          show_name?: boolean
+          show_picture?: boolean
           signed_payload?: string | null
           tier?: string
           user_id?: string
           verified_at?: string | null
+          verified_name?: string | null
+          verified_picture_url?: string | null
           verify_token?: string
         }
         Relationships: [
@@ -388,9 +381,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

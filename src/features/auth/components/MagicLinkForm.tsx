@@ -28,31 +28,45 @@ export function MagicLinkForm({ redirectTo }: { redirectTo?: string }) {
 
   if (sent) {
     return (
-      <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-        Magic Link verschickt. Schau in dein E-Mail-Postfach.
+      <div className="rounded-2xl border border-accent/30 bg-accent/10 p-6 text-center">
+        <p className="text-2xl">✉️</p>
+        <p className="mt-3 text-base font-semibold text-accent">
+          Magic Link verschickt
+        </p>
+        <p className="mt-1 text-sm text-accent">
+          Schau in dein E-Mail-Postfach.
+        </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">E-Mail</Label>
-        <Input
-          id="email"
-          type="email"
-          autoComplete="email"
-          placeholder="du@beispiel.de"
-          {...register('email')}
-        />
-        {errors.email && (
-          <p className="text-xs text-red-600">{errors.email.message}</p>
-        )}
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold tracking-tight text-text">Anmelden</h1>
+        <p className="mt-2 text-sm text-muted">
+          Magic Link per E-Mail. Kein Passwort.
+        </p>
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? 'Sende…' : 'Magic Link senden'}
-      </Button>
-    </form>
+      <form onSubmit={onSubmit} className="space-y-3">
+        <div className="space-y-2">
+          <Label htmlFor="email">E-Mail</Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="du@beispiel.de"
+            {...register('email')}
+          />
+          {errors.email && (
+            <p className="text-sm text-danger">{errors.email.message}</p>
+          )}
+        </div>
+        {error && <p className="text-sm text-danger">{error}</p>}
+        <Button type="submit" disabled={isSubmitting} block size="lg">
+          {isSubmitting ? 'Sende…' : 'Magic Link senden'}
+        </Button>
+      </form>
+    </div>
   );
 }

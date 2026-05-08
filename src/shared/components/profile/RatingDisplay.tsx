@@ -7,11 +7,11 @@ export function RatingDisplay({
 }) {
   if (score == null && count == null) return null;
   return (
-    <div className="text-sm text-zinc-700">
+    <div className="text-sm text-text">
       {score != null && (
         <span className="font-medium">⭐ {score.toFixed(1)}</span>
       )}
-      {count != null && <span className="ml-1 text-zinc-500">· {count}</span>}
+      {count != null && <span className="ml-1 text-muted">· {count}</span>}
     </div>
   );
 }

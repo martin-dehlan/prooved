@@ -1,6 +1,18 @@
-export type Platform = 'ebay' | 'vinted' | 'kleinanzeigen' | 'paypal';
+export type Platform =
+  | 'ebay'
+  | 'vinted'
+  | 'kleinanzeigen'
+  | 'paypal'
+  | 'website'
+  | 'etsy'
+  | 'github'
+  | 'linkedin'
+  | 'discogs'
+  | 'willhaben'
+  | 'shpock';
+
 export type Tier = 'gold' | 'silver' | 'bronze';
-export type VerifyMethod = 'oauth' | 'bio_code' | 'scrape';
+export type VerifyMethod = 'oauth' | 'bio_code' | 'scrape' | 'domain_dns';
 
 export interface PlatformProfile {
   platformUserId: string | null;
@@ -10,7 +22,6 @@ export interface PlatformProfile {
   positiveCount: number | null;
   negativeCount: number | null;
   memberSince: string | null;
-  /** Free-form, e.g. "verified", "active". Used by PayPal which has no rating. */
   identityVerified?: boolean;
 }
 
@@ -18,7 +29,6 @@ export interface PlatformAdapter {
   platform: Platform;
   tier: Tier;
   method: VerifyMethod;
-  /** Best-effort fetch of public profile data. Throws on hard failure. */
   fetchProfile(input: { url?: string; accessToken?: string; userId?: string }): Promise<PlatformProfile>;
 }
 
@@ -27,12 +37,19 @@ export const PLATFORM_LABELS: Record<Platform, string> = {
   paypal: 'PayPal',
   vinted: 'Vinted',
   kleinanzeigen: 'Kleinanzeigen',
+  website: 'Website',
+  etsy: 'Etsy',
+  github: 'GitHub',
+  linkedin: 'LinkedIn',
+  discogs: 'Discogs',
+  willhaben: 'Willhaben',
+  shpock: 'Shpock',
 };
 
 export const TIER_BADGE: Record<Tier, { label: string; className: string }> = {
-  gold:   { label: 'Gold',   className: 'bg-yellow-100 text-yellow-900 ring-yellow-300' },
-  silver: { label: 'Silver', className: 'bg-zinc-100  text-zinc-900  ring-zinc-300' },
-  bronze: { label: 'Bronze', className: 'bg-amber-100 text-amber-900 ring-amber-300' },
+  gold:   { label: 'Gold',   className: 'bg-warning/15 text-warning ring-warning/30' },
+  silver: { label: 'Silver', className: 'bg-elevated  text-text  ring-elevated' },
+  bronze: { label: 'Bronze', className: 'bg-warning/15 text-warning ring-warning/30' },
 };
 
 export const PLATFORM_TIER: Record<Platform, Tier> = {
@@ -40,6 +57,13 @@ export const PLATFORM_TIER: Record<Platform, Tier> = {
   paypal: 'gold',
   vinted: 'silver',
   kleinanzeigen: 'silver',
+  website: 'silver',
+  etsy: 'gold',
+  github: 'silver',
+  linkedin: 'gold',
+  discogs: 'silver',
+  willhaben: 'silver',
+  shpock: 'silver',
 };
 
 export const PLATFORM_METHOD: Record<Platform, VerifyMethod> = {
@@ -47,4 +71,11 @@ export const PLATFORM_METHOD: Record<Platform, VerifyMethod> = {
   paypal: 'oauth',
   vinted: 'bio_code',
   kleinanzeigen: 'bio_code',
+  website: 'domain_dns',
+  etsy: 'oauth',
+  github: 'oauth',
+  linkedin: 'oauth',
+  discogs: 'bio_code',
+  willhaben: 'bio_code',
+  shpock: 'bio_code',
 };

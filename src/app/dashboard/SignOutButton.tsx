@@ -1,19 +1,17 @@
 'use client';
 
-import { Button } from '@/shared/components/ui';
 import { signOut } from '@/features/auth';
 
 export function SignOutButton() {
   return (
-    <Button
-      variant="ghost"
-      size="sm"
+    <button
       onClick={async () => {
         await signOut();
         window.location.href = '/';
       }}
+      className="text-sm font-medium text-muted hover:text-text"
     >
       Abmelden
-    </Button>
+    </button>
   );
 }

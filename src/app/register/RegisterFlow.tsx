@@ -20,7 +20,7 @@ export function RegisterFlow() {
     if (authUserId && appUser) router.replace(redirect);
   }, [authUserId, appUser, redirect, router]);
 
-  if (loading) return <p className="text-sm text-zinc-500">Lade…</p>;
+  if (loading) return <p className="text-sm text-muted">Lade…</p>;
   if (authUserId && appUser) return null;
 
   if (authUserId && !appUser && email) {

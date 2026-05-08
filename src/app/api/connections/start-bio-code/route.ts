@@ -1,29 +1,19 @@
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/shared/lib/api/requireUser';
-import { startBioCodeFlow } from '@/features/verify';
-import { startBioCodeFlowSchema } from '@/features/connections';
+import { generateBioCode } from '@/shared/lib/utils/bio-code';
+import { BIOCODE_PLATFORMS } from '@/features/connections/types/connection.schemas';
 
-export async function POST(req: Request) {
+const BIOCODE_SET = new Set<string>(BIOCODE_PLATFORMS);
+
+export async function GET(req: Request) {
   const auth = await requireUser();
   if ('error' in auth) return auth.error;
 
-  const body = await req.json();
-  const parsed = startBioCodeFlowSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  const { searchParams } = new URL(req.url);
+  const platform = searchParams.get('platform') ?? '';
+  if (!BIOCODE_SET.has(platform)) {
+    return NextResponse.json({ error: 'invalid_platform' }, { status: 400 });
   }
 
-  try {
-    const result = await startBioCodeFlow({
-      userId: auth.userId,
-      platform: parsed.data.platform,
-      platformUrl: parsed.data.platformUrl,
-    });
-    return NextResponse.json(result);
-  } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'unknown' },
-      { status: 500 },
-    );
-  }
+  return NextResponse.json({ code: generateBioCode(auth.userId, platform) });
 }

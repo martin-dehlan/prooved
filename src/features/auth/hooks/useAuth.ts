@@ -13,23 +13,8 @@ export function useAuth(): AuthState {
   useEffect(() => {
     let alive = true;
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      const id = data.session?.user.id ?? null;
+    async function hydrate(id: string | null) {
       if (!alive) return;
-      setAuthUserId(id);
-      if (id) {
-        try {
-          const profile = await getAppUser(id);
-          if (alive) setAppUser(profile);
-        } catch {
-          if (alive) setAppUser(null);
-        }
-      }
-      if (alive) setLoading(false);
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const id = session?.user.id ?? null;
       setAuthUserId(id);
       if (!id) {
         setAppUser(null);
@@ -37,10 +22,28 @@ export function useAuth(): AuthState {
       }
       try {
         const profile = await getAppUser(id);
-        setAppUser(profile);
-      } catch {
-        setAppUser(null);
+        if (alive) setAppUser(profile);
+      } catch (err) {
+        console.error('[useAuth] getAppUser failed', err);
+        if (alive) setAppUser(null);
       }
+    }
+
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (error) console.error('[useAuth] getSession error', error);
+        return hydrate(data.session?.user.id ?? null);
+      })
+      .catch((err) => {
+        console.error('[useAuth] getSession threw', err);
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      hydrate(session?.user.id ?? null);
     });
 
     return () => {

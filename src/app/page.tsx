@@ -1,10 +1,9 @@
-import { Hero, HowItWorks } from '@/features/landing';
+import { Hero } from '@/features/landing';
 
 export default function HomePage() {
   return (
-    <main>
+    <main className="bg-bg">
       <Hero />
-      <HowItWorks />
     </main>
   );
 }

@@ -1,5 +1,4 @@
 export {
-  startBioCodeFlow,
-  verifyBioCodeForConnection,
+  verifyBioCodeBySource,
   refreshConnectionData,
 } from './services/verifyService';

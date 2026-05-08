@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { exchangePayPalCode, fetchPayPalUserInfo } from '@/shared/lib/platforms/paypal';
 import { createSupabaseAdmin } from '@/shared/lib/supabase/server';
 import { encrypt } from '@/shared/lib/crypto';
+import { notifyUserOfNewConnection } from '@/shared/lib/email/notify';
 import { cookies } from 'next/headers';
 
 export async function GET(req: Request) {
@@ -24,7 +25,9 @@ export async function GET(req: Request) {
     const profile = await fetchPayPalUserInfo(tokens.access_token);
     const supabase = createSupabaseAdmin();
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + tokens.expires_in * 1000).toISOString();
+    // PayPal refresh tokens don't expose expiry — treat connection as valid for 1 year,
+    // access_token is silently refreshed via refresh_token when stale.
+    const expiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
     await supabase.from('connections').upsert(
       {
@@ -42,12 +45,15 @@ export async function GET(req: Request) {
         positive_count: null,
         negative_count: null,
         member_since: null,
+        verified_name: profile.verifiedName,
+        verified_picture_url: profile.pictureUrl,
         last_fetched: now.toISOString(),
         signed_payload: encrypt(JSON.stringify(tokens)),
       },
       { onConflict: 'user_id,platform' },
     );
 
+    void notifyUserOfNewConnection({ userId, platform: 'PayPal' });
     return NextResponse.redirect(new URL('/dashboard', process.env.NEXT_PUBLIC_APP_URL ?? url.origin));
   } catch (e) {
     return NextResponse.json(
