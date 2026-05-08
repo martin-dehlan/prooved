@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { PublicProfile as PublicProfileData } from '@/features/profile/services/profileService';
 import type { Connection } from '@/features/connections/types/connection.types';
+import { computeTrust, type Tier } from '@/shared/lib/trust';
 import { CopyLinkButton } from './CopyLinkButton';
 import { PlatformLink } from './PlatformLink';
 
@@ -11,7 +12,7 @@ interface TrustStats {
   oldestYear: number | null;
 }
 
-function computeTrust(connections: Connection[]): TrustStats {
+function computeOldStats(connections: Connection[]): TrustStats {
   let totalRatings = 0;
   let totalPositive = 0;
   let totalNegative = 0;
@@ -86,7 +87,8 @@ export function PublicProfile({ data }: { data: PublicProfileData }) {
       .join('') || user.slug[0]?.toUpperCase();
 
   const verifiedCount = connections.length;
-  const trust = computeTrust(connections);
+  const trust = computeOldStats(connections);
+  const score = computeTrust({ connections });
   const avatar = pickAvatar(connections);
   const verifiedName = pickVerifiedName(connections);
 
@@ -129,20 +131,17 @@ export function PublicProfile({ data }: { data: PublicProfileData }) {
           )}
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <TierBadge tier={score.tier} label={score.tierLabel} score={score.total} />
             <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 font-semibold text-white">
               <CheckIcon className="h-3 w-3" /> {verifiedCount} verifiziert
             </span>
-            {user.wallet_address && user.wallet_verified_at && (
-              <a
-                href={`https://explorer.solana.com/address/${user.wallet_address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full bg-surface px-3 py-1 font-medium text-text ring-1 ring-elevated hover:bg-elevated"
-              >
-                ◎ Wallet
-              </a>
-            )}
           </div>
+
+          <ScoreBar
+            total={score.total}
+            tierLabel={score.tierLabel}
+            components={score.components}
+          />
 
           {(trust.totalRatings > 0 || trust.oldestYear) && (
             <dl className="mt-6 grid w-full grid-cols-3 gap-2 rounded-2xl border border-elevated bg-surface px-2 py-4 text-center">
@@ -188,6 +187,90 @@ export function PublicProfile({ data }: { data: PublicProfileData }) {
         </footer>
       </div>
     </div>
+  );
+}
+
+const TIER_STYLE: Record<Tier, string> = {
+  neu: 'bg-elevated text-muted ring-elevated',
+  bronze: 'bg-warning/15 text-warning ring-warning/30',
+  silver: 'bg-elevated text-text ring-elevated',
+  gold: 'bg-warning text-bg ring-warning',
+  diamond: 'bg-accent text-white ring-accent',
+};
+
+const TIER_GLYPH: Record<Tier, string> = {
+  neu: '◌',
+  bronze: '◐',
+  silver: '◑',
+  gold: '◕',
+  diamond: '◆',
+};
+
+function TierBadge({ tier, label, score }: { tier: Tier; label: string; score: number }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-bold uppercase tracking-wide ring-1 ring-inset ${TIER_STYLE[tier]}`}
+    >
+      <span aria-hidden>{TIER_GLYPH[tier]}</span>
+      {label} · {score}
+    </span>
+  );
+}
+
+function ScoreBar({
+  total,
+  tierLabel,
+  components,
+}: {
+  total: number;
+  tierLabel: string;
+  components: { id: string; label: string; earned: number; max: number }[];
+}) {
+  return (
+    <details className="mt-4 w-full rounded-2xl border border-elevated bg-surface text-left">
+      <summary className="flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3 text-sm">
+        <span className="text-muted">
+          Vertrauens-Score{' '}
+          <span className="font-bold text-text">
+            {total} / 100
+          </span>{' '}
+          · {tierLabel}
+        </span>
+        <span aria-hidden className="text-muted">
+          ⌄
+        </span>
+      </summary>
+      <div className="space-y-2 border-t border-elevated px-4 py-3 text-sm">
+        {components
+          .filter((c) => c.id !== 'penalty' || c.earned !== 0)
+          .map((c) => (
+            <div key={c.id} className="space-y-1">
+              <div className="flex items-baseline justify-between">
+                <span className="text-muted">{c.label}</span>
+                <span className="font-medium text-text">
+                  {c.earned > 0 ? '+' : ''}
+                  {c.earned}
+                  {c.max > 0 ? ` / ${c.max}` : ''}
+                </span>
+              </div>
+              {c.max > 0 && (
+                <div className="h-1.5 overflow-hidden rounded-full bg-elevated">
+                  <div
+                    className="h-full rounded-full bg-accent transition-all"
+                    style={{
+                      width: `${Math.max(0, (c.earned / c.max) * 100)}%`,
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        <p className="pt-2 text-xs text-muted">
+          Berechnet aus deinen verifizierten Plattformen. Keine Black-Box,
+          keine versteckten Faktoren.
+        </p>
+      </div>
+    </details>
   );
 }
 
