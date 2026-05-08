@@ -76,7 +76,13 @@ const SOURCE_LABEL: Record<string, string> = {
   github: 'GitHub',
 };
 
-export function PublicProfile({ data }: { data: PublicProfileData }) {
+export function PublicProfile({
+  data,
+  isOwner = false,
+}: {
+  data: PublicProfileData;
+  isOwner?: boolean;
+}) {
   const { user, connections } = data;
   const display = user.name ?? user.slug;
   const initials =
@@ -94,6 +100,19 @@ export function PublicProfile({ data }: { data: PublicProfileData }) {
 
   return (
     <div className="min-h-screen bg-bg">
+      {isOwner && (
+        <div className="sticky top-0 z-10 border-b border-elevated bg-surface/80 backdrop-blur">
+          <div className="mx-auto flex max-w-md items-center justify-between px-5 py-2 text-sm">
+            <span className="text-muted">Du siehst dein eigenes Profil</span>
+            <Link
+              href="/dashboard"
+              className="font-semibold text-accent hover:underline"
+            >
+              Zum Dashboard →
+            </Link>
+          </div>
+        </div>
+      )}
       <div className="mx-auto flex max-w-md flex-col px-5 py-10 sm:py-14">
         <header className="flex flex-col items-center text-center">
           {avatar ? (

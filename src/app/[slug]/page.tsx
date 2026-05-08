@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { lookupProfile, PublicProfile } from '@/features/profile';
+import { createSupabaseServer } from '@/shared/lib/supabase/server';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -42,5 +43,10 @@ export default async function ProfilePage({ params }: Props) {
       </div>
     );
   }
-  return <PublicProfile data={result.data} />;
+  // Detect owner — only show admin/dashboard hints to logged-in profile owner
+  const supabase = await createSupabaseServer();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  const isOwner = !!authUser && authUser.id === result.data.user.id;
+
+  return <PublicProfile data={result.data} isOwner={isOwner} />;
 }
