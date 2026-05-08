@@ -1,23 +1,35 @@
-// Source: Discogs public profile HTML scrape.
-// Bio-code goes in profile description (Settings → Profile → "Profile / Bio").
-// FRAGILE — markup may change.
+// Source: Discogs public REST API (HTML scrape was returning 403).
+// Docs: https://www.discogs.com/developers
+// Endpoint: GET /users/{username} — public, no auth needed.
+// User-Agent must identify app per Discogs ToS.
 
 import type { PlatformAdapter, PlatformProfile } from '@/shared/types/platform.types';
 
-const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
+const UA = 'Prooved/1.0 (+https://prooved.xyz)';
+const API_BASE = 'https://api.discogs.com';
 
 /** Accepts discogs.com/user/<username> or just <username>. */
 export function extractDiscogsUsername(input: string): string | null {
   const trimmed = input.trim();
   const m = trimmed.match(/discogs\.com\/(?:user\/)?([A-Za-z0-9_.-]+)/);
   if (m) return m[1]!;
-  // Plain username
   if (/^[A-Za-z0-9_.-]+$/.test(trimmed)) return trimmed;
   return null;
 }
 
+interface DiscogsUserResponse {
+  username?: string;
+  profile?: string;
+  uri?: string;
+  registered?: string;
+  rating_avg?: number;
+  num_collection?: number;
+  num_for_sale?: number;
+  releases_contributed?: number;
+}
+
 export interface DiscogsScrape {
-  html: string;
+  profile: string;
   url: string;
   ratingScore: number | null;
   ratingCount: number | null;
@@ -25,36 +37,25 @@ export interface DiscogsScrape {
 }
 
 export async function scrapeDiscogsProfile(username: string): Promise<DiscogsScrape> {
-  const url = `https://www.discogs.com/user/${encodeURIComponent(username)}`;
-  const res = await fetch(url, {
+  const res = await fetch(`${API_BASE}/users/${encodeURIComponent(username)}`, {
     method: 'GET',
     signal: AbortSignal.timeout(8000),
     headers: {
       'User-Agent': UA,
-      Accept: 'text/html,application/xhtml+xml',
-      'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+      Accept: 'application/json',
     },
   });
-  if (!res.ok) throw new Error(`Discogs profile fetch failed: ${res.status}`);
-  const html = await res.text();
-
-  const ratingScore = Number(html.match(/(\d(?:\.\d)?)\s*\/\s*5(?:\.0)?/)?.[1] ?? 'NaN');
-  const ratingCount = Number(
-    html.match(/(\d+)\s*ratings?/)?.[1] ??
-      html.match(/(\d+)\s*Bewertung/)?.[1] ??
-      'NaN',
-  );
-  const memberSince =
-    html.match(/joined[^0-9]*([A-Z][a-z]+ \d{1,2}, \d{4})/)?.[1] ??
-    html.match(/Mitglied seit[^0-9]*(\d{4})/)?.[1] ??
-    null;
-
+  if (!res.ok) {
+    throw new Error(`Discogs API failed: ${res.status}`);
+  }
+  const json = (await res.json()) as DiscogsUserResponse;
   return {
-    html,
-    url,
-    ratingScore: Number.isFinite(ratingScore) ? ratingScore : null,
-    ratingCount: Number.isFinite(ratingCount) ? ratingCount : null,
-    memberSince,
+    profile: json.profile ?? '',
+    url: json.uri ?? `https://www.discogs.com/user/${encodeURIComponent(username)}`,
+    ratingScore: typeof json.rating_avg === 'number' ? json.rating_avg : null,
+    // Discogs has no public seller-feedback count via /users; use releases_contributed as activity proxy
+    ratingCount: typeof json.releases_contributed === 'number' ? json.releases_contributed : null,
+    memberSince: json.registered ?? null,
   };
 }
 
@@ -64,7 +65,7 @@ export async function discogsBioContainsCode(
 ): Promise<{ matched: boolean; profile: PlatformProfile }> {
   const data = await scrapeDiscogsProfile(username);
   return {
-    matched: data.html.includes(code),
+    matched: data.profile.includes(code),
     profile: {
       platformUserId: username,
       url: data.url,

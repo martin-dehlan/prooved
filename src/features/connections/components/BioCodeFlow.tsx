@@ -70,12 +70,11 @@ const CONFIG: Record<ScriptedPlatform, PlatformConfig> = {
   discogs: {
     label: 'Discogs',
     placeholder: 'https://www.discogs.com/user/dein-username',
-    bioField: 'Profile / Bio',
+    bioField: 'Profile-Beschreibung',
     steps: [
-      'Auf [discogs.com](https://www.discogs.com) einloggen → oben rechts Avatar → [Settings](https://www.discogs.com/settings/profile)',
-      'Tab "Profile" → "Profile / Bio" Feld bearbeiten',
-      'Code einfügen + speichern',
-      'URL deines Profils kopieren (discogs.com/user/USERNAME)',
+      'Auf [discogs.com](https://www.discogs.com) einloggen → [User Settings](https://www.discogs.com/settings/user) öffnen',
+      'Im Feld "Profile" Code einfügen + "Save settings"',
+      'URL deines Profils kopieren (discogs.com/user/DEINUSERNAME)',
     ],
   },
   willhaben: {
