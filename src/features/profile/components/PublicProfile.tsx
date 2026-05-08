@@ -3,38 +3,12 @@ import Image from 'next/image';
 import type { PublicProfile as PublicProfileData } from '@/features/profile/services/profileService';
 import type { Connection } from '@/features/connections/types/connection.types';
 import { computeTrust, type Tier } from '@/shared/lib/trust';
+import {
+  checkNameConsistency,
+  formatMonthYear,
+} from '@/shared/lib/profile-checks';
 import { CopyLinkButton } from './CopyLinkButton';
 import { PlatformLink } from './PlatformLink';
-
-interface TrustStats {
-  totalRatings: number;
-  positivePercent: number | null;
-  oldestYear: number | null;
-}
-
-function computeOldStats(connections: Connection[]): TrustStats {
-  let totalRatings = 0;
-  let totalPositive = 0;
-  let totalNegative = 0;
-  let oldestMs = Infinity;
-
-  for (const c of connections) {
-    if (c.rating_count != null) totalRatings += c.rating_count;
-    if (c.positive_count != null) totalPositive += c.positive_count;
-    if (c.negative_count != null) totalNegative += c.negative_count;
-    if (c.member_since) {
-      const t = new Date(c.member_since).getTime();
-      if (!Number.isNaN(t) && t < oldestMs) oldestMs = t;
-    }
-  }
-
-  const totalRated = totalPositive + totalNegative;
-  const positivePercent = totalRated > 0 ? (totalPositive / totalRated) * 100 : null;
-  const oldestYear =
-    oldestMs !== Infinity ? new Date(oldestMs).getFullYear() : null;
-
-  return { totalRatings, positivePercent, oldestYear };
-}
 
 // Pick best avatar source — KYC-grade first.
 function pickAvatar(connections: Connection[]): {
@@ -93,10 +67,11 @@ export function PublicProfile({
       .join('') || user.slug[0]?.toUpperCase();
 
   const verifiedCount = connections.length;
-  const trust = computeOldStats(connections);
   const score = computeTrust({ connections });
   const avatar = pickAvatar(connections);
   const verifiedName = pickVerifiedName(connections);
+  const nameCheck = checkNameConsistency(connections);
+  const proovedSince = formatMonthYear(user.created_at);
 
   return (
     <div className="min-h-screen bg-bg">
@@ -149,6 +124,23 @@ export function PublicProfile({
             </p>
           )}
 
+          {proovedSince && (
+            <p className="mt-1 text-xs text-muted">
+              Auf Prooved seit {proovedSince}
+            </p>
+          )}
+
+          {nameCheck.hasMismatch && (
+            <div className="mt-3 w-full rounded-xl bg-warning/10 px-4 py-2 text-left text-xs text-warning">
+              <p className="font-semibold">⚠ Verschiedene Klarnamen verknüpft</p>
+              <p className="mt-1 text-warning/80">
+                {nameCheck.names
+                  .map((n) => `${n.name} (${SOURCE_LABEL[n.source] ?? n.source})`)
+                  .join(' · ')}
+              </p>
+            </div>
+          )}
+
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
             <TierBadge tier={score.tier} label={score.tierLabel} score={score.total} />
             <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 font-semibold text-white">
@@ -156,28 +148,35 @@ export function PublicProfile({
             </span>
           </div>
 
+          {score.qualityCapped && (
+            <div className="mt-3 w-full rounded-xl bg-danger/10 px-4 py-2 text-left text-xs text-danger">
+              <p className="font-semibold">⚠ Score wegen schlechter Bewertungs-Quote begrenzt</p>
+              <p className="mt-1 text-danger/80">
+                Aggregierte positive Quote unter 70 % — Tier auf Bronze limitiert,
+                unabhängig von Anzahl verknüpfter Plattformen.
+              </p>
+            </div>
+          )}
+
           <ScoreBar
             total={score.total}
             tierLabel={score.tierLabel}
             components={score.components}
           />
 
-          {(trust.totalRatings > 0 || trust.oldestYear) && (
+          {(score.totalRatings > 0 || score.aggregatePositivePct != null) && (
             <dl className="mt-6 grid w-full grid-cols-3 gap-2 rounded-2xl border border-elevated bg-surface px-2 py-4 text-center">
+              <PercentStat pct={score.aggregatePositivePct} />
               <Stat
                 value={
-                  trust.positivePercent != null
-                    ? `${trust.positivePercent.toFixed(1).replace('.', ',')} %`
+                  score.totalRatings > 0
+                    ? score.totalRatings.toLocaleString('de-DE')
                     : '–'
                 }
-                label="positiv"
-              />
-              <Stat
-                value={trust.totalRatings > 0 ? trust.totalRatings.toLocaleString('de-DE') : '–'}
                 label="Bewertungen"
               />
               <Stat
-                value={trust.oldestYear ? `seit ${trust.oldestYear}` : '–'}
+                value={oldestYearLabel(connections)}
                 label="aktiv"
               />
             </dl>
@@ -202,9 +201,43 @@ export function PublicProfile({
           >
             Profil melden
           </Link>
+          <Link
+            href="/how-it-works"
+            className="text-xs text-muted underline-offset-4 hover:text-text hover:underline"
+          >
+            Was ist Prooved?
+          </Link>
           <span className="mt-2 text-xs text-muted">Powered by Prooved</span>
         </footer>
       </div>
+    </div>
+  );
+}
+
+function oldestYearLabel(connections: Connection[]): string {
+  let oldestMs = Infinity;
+  for (const c of connections) {
+    if (!c.member_since) continue;
+    const t = new Date(c.member_since).getTime();
+    if (!Number.isNaN(t) && t < oldestMs) oldestMs = t;
+  }
+  if (oldestMs === Infinity) return '–';
+  return `seit ${new Date(oldestMs).getFullYear()}`;
+}
+
+function PercentStat({ pct }: { pct: number | null }) {
+  if (pct == null) {
+    return <Stat value="–" label="positiv" />;
+  }
+  const fmt = `${pct.toFixed(1).replace('.', ',')} %`;
+  let cls = 'text-text';
+  if (pct < 50) cls = 'text-danger';
+  else if (pct < 90) cls = 'text-warning';
+  else if (pct >= 95) cls = 'text-accent';
+  return (
+    <div>
+      <dt className="text-xs font-medium text-muted">positiv</dt>
+      <dd className={`mt-0.5 text-base font-bold ${cls}`}>{fmt}</dd>
     </div>
   );
 }
@@ -243,7 +276,7 @@ function ScoreBar({
 }: {
   total: number;
   tierLabel: string;
-  components: { id: string; label: string; earned: number; max: number }[];
+  components: { id: string; label: string; earned: number; max: number; detail: string[] }[];
 }) {
   return (
     <details className="mt-4 w-full rounded-2xl border border-elevated bg-surface text-left">
@@ -282,11 +315,21 @@ function ScoreBar({
                   />
                 </div>
               )}
+              {c.detail.length > 0 && (
+                <ul className="ml-1 mt-1 space-y-0.5 text-xs text-muted">
+                  {c.detail.map((d, i) => (
+                    <li key={i}>• {d}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         <p className="pt-2 text-xs text-muted">
           Berechnet aus deinen verifizierten Plattformen. Keine Black-Box,
-          keine versteckten Faktoren.
+          keine versteckten Faktoren.{' '}
+          <Link href="/how-it-works" className="underline">
+            Wie funktioniert das?
+          </Link>
         </p>
       </div>
     </details>

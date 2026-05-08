@@ -1,6 +1,7 @@
 import { PLATFORM_LABELS, PLATFORM_TIER } from '@/shared/types/platform.types';
 import type { Connection } from '@/features/connections/types/connection.types';
 import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
+import { isSuspectMembership, formatActivity } from '@/shared/lib/profile-checks';
 
 const PLATFORM_TILE: Record<string, { bg: string; fg: string }> = {
   ebay:          { bg: 'bg-blue-600',   fg: 'text-white' },
@@ -162,6 +163,8 @@ export function PlatformLink({ connection: c }: { connection: Connection }) {
       : PLATFORM_LABELS[c.platform];
   const clickable = isClickable(c);
   const since = formatYear(c.member_since);
+  const suspect = isSuspectMembership(c);
+  const activity = formatActivity(c.last_fetched);
 
   const tile = PLATFORM_TILE[c.platform] ?? { bg: 'bg-elevated', fg: 'text-text' };
   const inner = (
@@ -187,7 +190,18 @@ export function PlatformLink({ connection: c }: { connection: Connection }) {
           <PrimaryMetric c={c} />
         </div>
         {since && (
-          <p className="mt-0.5 text-xs text-muted">Mitglied seit {since}</p>
+          <p
+            className={`mt-0.5 text-xs ${suspect.flagged ? 'text-warning' : 'text-muted'}`}
+          >
+            Mitglied seit {since}
+            {suspect.flagged && ' · ⚠ ungewöhnlich'}
+          </p>
+        )}
+        {suspect.flagged && suspect.reason && (
+          <p className="mt-0.5 text-[11px] text-warning/80">{suspect.reason}</p>
+        )}
+        {activity && (
+          <p className="mt-0.5 text-[11px] text-muted">{activity}</p>
         )}
       </div>
 

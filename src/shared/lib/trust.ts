@@ -26,6 +26,12 @@ export interface TrustScore {
   components: ScoreComponent[];
   /** Hint cards: "+X by doing Y" — actionable suggestions. */
   suggestions: { delta: number; text: string }[];
+  /** Aggregated positive % across visible marketplaces (null if insufficient data). */
+  aggregatePositivePct: number | null;
+  /** Total visible ratings across all marketplaces. */
+  totalRatings: number;
+  /** True if score was capped by a quality penalty. */
+  qualityCapped: boolean;
 }
 
 const TIER_THRESHOLDS: { min: number; tier: Tier; label: string }[] = [
@@ -111,17 +117,43 @@ export function computeTrust({ connections, reportCount = 0 }: ScoreInput): Trus
     activity.earned +
     penalty.earned;
 
-  const total = Math.max(0, Math.min(100, Math.round(totalEarned)));
-  const { tier, tierLabel } = tierFor(total);
+  // Aggregate quality stats — used for tier cap + UI display
+  const realMp = visible.filter(
+    (c) =>
+      MARKETPLACE_PLATFORMS.includes(c.platform as (typeof MARKETPLACE_PLATFORMS)[number]) &&
+      c.platform !== 'paypal',
+  );
+  const totalPos = realMp.reduce((s, c) => s + (c.positive_count ?? 0), 0);
+  const totalNeg = realMp.reduce((s, c) => s + (c.negative_count ?? 0), 0);
+  const totalRatedSum = totalPos + totalNeg;
+  const aggregatePositivePct = totalRatedSum >= 10 ? (totalPos / totalRatedSum) * 100 : null;
+  const totalRatings = realMp.reduce((s, c) => s + (c.rating_count ?? 0), 0);
+
+  let total = Math.max(0, Math.min(100, Math.round(totalEarned)));
+  let qualityCapped = false;
+  let tierInfo = tierFor(total);
+
+  // Tier-cap: if quality is awful (< 70 % positive across ≥10 ratings), cap at Bronze
+  // regardless of how many platforms are connected. Stops gaming via volume.
+  if (aggregatePositivePct != null && aggregatePositivePct < 70) {
+    if (total > 49) {
+      total = 49; // upper edge of Bronze
+      qualityCapped = true;
+    }
+    tierInfo = tierFor(total);
+  }
 
   const suggestions = buildSuggestions({ visible, identity, marketplace, longevity });
 
   return {
     total,
-    tier,
-    tierLabel,
+    tier: tierInfo.tier,
+    tierLabel: tierInfo.tierLabel,
     components: [identity, marketplace, volume, longevity, activity, penalty],
     suggestions,
+    aggregatePositivePct,
+    totalRatings,
+    qualityCapped,
   };
 }
 
@@ -166,33 +198,49 @@ function computeMarketplace(visible: Connection[]): ScoreComponent {
   const realMarketplaces = marketplaces.filter((c) => c.platform !== 'paypal');
   const platformNames = realMarketplaces.map(nameFor).join(' · ');
 
+  // Base score by count
+  let base = 0;
   if (realMarketplaces.length >= 4) {
-    earned += 30;
+    base = 30;
     detail.push(`+30 ${realMarketplaces.length} Marktplätze: ${platformNames}`);
   } else if (realMarketplaces.length >= 2) {
-    earned += 20;
+    base = 20;
     detail.push(`+20 ${realMarketplaces.length} Marktplätze: ${platformNames}`);
   } else if (realMarketplaces.length === 1) {
-    earned += 10;
+    base = 10;
     detail.push(`+10 1 Marktplatz: ${platformNames}`);
   } else {
     detail.push('Keine Marktplatz-Verifikation');
   }
 
-  // Quality bonus from eBay positive %
-  const ebay = realMarketplaces.find((c) => c.platform === 'ebay');
-  if (ebay && (ebay.positive_count ?? 0) + (ebay.negative_count ?? 0) >= 10) {
-    const total = (ebay.positive_count ?? 0) + (ebay.negative_count ?? 0);
-    const pct = ((ebay.positive_count ?? 0) / total) * 100;
+  earned = base;
+
+  // Quality factor — applies to OVERALL marketplace count, not just eBay.
+  // We aggregate positive/negative across ALL marketplaces with feedback data.
+  const totalPos = realMarketplaces.reduce((s, c) => s + (c.positive_count ?? 0), 0);
+  const totalNeg = realMarketplaces.reduce((s, c) => s + (c.negative_count ?? 0), 0);
+  const totalRated = totalPos + totalNeg;
+
+  if (totalRated >= 10) {
+    const pct = (totalPos / totalRated) * 100;
     const pctFmt = pct.toFixed(1).replace('.', ',');
     if (pct >= 95) {
       earned += 10;
-      detail.push(`+10 eBay-Quote: ${pctFmt} % positiv (${total} Bewertungen)`);
+      detail.push(`+10 Quote: ${pctFmt} % positiv (${totalRated} Bewertungen)`);
     } else if (pct >= 90) {
       earned += 5;
-      detail.push(`+5 eBay-Quote: ${pctFmt} % positiv (${total} Bewertungen)`);
+      detail.push(`+5 Quote: ${pctFmt} % positiv (${totalRated} Bewertungen)`);
+    } else if (pct >= 80) {
+      // 80-89 %: neutral, no bonus, no penalty
+      detail.push(`+0 Quote: ${pctFmt} % positiv — kein Bonus, keine Strafe`);
+    } else if (pct >= 50) {
+      const penalty = Math.min(20, base);
+      earned -= penalty;
+      detail.push(`-${penalty} Strafe: nur ${pctFmt} % positiv (<80 %)`);
     } else {
-      detail.push(`+0 eBay-Quote: ${pctFmt} % positiv (zu niedrig für Bonus)`);
+      // < 50 % positive — neutralize the marketplace component entirely
+      earned = 0;
+      detail.push(`-${base} schwere Strafe: ${pctFmt} % positiv (<50 %) — Marktplatz-Reputation nicht vertrauenswürdig`);
     }
   }
 
