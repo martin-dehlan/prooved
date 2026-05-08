@@ -5,12 +5,13 @@ import {
   PLATFORM_METHOD,
 } from '@/shared/types/platform.types';
 import type { Platform } from '@/shared/types/platform.types';
+import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 
 const PLATFORMS: Platform[] = [
   'ebay', 'paypal', 'etsy', 'vinted', 'kleinanzeigen',
   'willhaben', 'shpock', 'discogs',
   'linkedin', 'github',
-  'website',
+  'website', 'custom',
 ];
 
 const METHOD_LABEL = {
@@ -20,25 +21,24 @@ const METHOD_LABEL = {
   domain_dns: 'DNS-Record',
 } as const;
 
-const PLATFORM_GLYPH: Record<Platform, string> = {
-  ebay: 'eB', paypal: 'PP', vinted: 'Vt', kleinanzeigen: 'KA',
-  website: '◉', etsy: 'Et', github: 'Gh', linkedin: 'in',
-  discogs: 'Dc', willhaben: 'Wh', shpock: 'Sh', custom: '+',
+// Brand-color tile bg + icon-color combos.
+// Brand-strong platforms get colored tile w/ white icon.
+// Conceptual platforms (website, custom) get neutral tile.
+const PLATFORM_TILE: Record<Platform, { bg: string; fg: string }> = {
+  ebay:          { bg: 'bg-blue-600',   fg: 'text-white' },
+  paypal:        { bg: 'bg-sky-700',    fg: 'text-white' },
+  vinted:        { bg: 'bg-teal-600',   fg: 'text-white' },
+  kleinanzeigen: { bg: 'bg-[#1D4B00]',  fg: 'text-white' },
+  etsy:          { bg: 'bg-orange-700', fg: 'text-white' },
+  github:        { bg: 'bg-zinc-800',   fg: 'text-white' },
+  linkedin:      { bg: 'bg-sky-600',    fg: 'text-white' },
+  discogs:       { bg: 'bg-zinc-700',   fg: 'text-white' },
+  willhaben:     { bg: 'bg-accent',     fg: 'text-white' },
+  shpock:        { bg: 'bg-yellow-500', fg: 'text-text' },
+  website:       { bg: 'bg-elevated',   fg: 'text-text' },
+  custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };
-const PLATFORM_BG: Record<Platform, string> = {
-  ebay: 'bg-blue-600',
-  paypal: 'bg-sky-700',
-  vinted: 'bg-teal-600',
-  kleinanzeigen: 'bg-warning',
-  website: 'bg-text',
-  etsy: 'bg-orange-700',
-  github: 'bg-zinc-800',
-  linkedin: 'bg-sky-600',
-  discogs: 'bg-zinc-700',
-  willhaben: 'bg-accent',
-  shpock: 'bg-yellow-500',
-  custom: 'bg-elevated',
-};
+
 const TIER_PILL: Record<string, string> = {
   gold: 'bg-warning text-text',
   silver: 'bg-elevated text-text',
@@ -50,17 +50,17 @@ export function PlatformGrid() {
     <ul className="space-y-2">
       {PLATFORMS.map((p) => {
         const tier = PLATFORM_TIER[p];
+        const tile = PLATFORM_TILE[p];
         return (
           <li key={p}>
             <Link
               href={`/dashboard/connect/${p}`}
-              className="flex items-center gap-4 rounded-2xl border border-elevated bg-surface p-4 transition hover:-translate-y-0.5 hover:border-elevated"
+              className="flex items-center gap-4 rounded-2xl border border-elevated bg-surface p-4 transition hover:-translate-y-0.5 hover:border-muted"
             >
               <div
-                aria-hidden
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white ${PLATFORM_BG[p]}`}
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tile.bg} ${tile.fg}`}
               >
-                {PLATFORM_GLYPH[p]}
+                <PlatformIcon platform={p} size={22} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

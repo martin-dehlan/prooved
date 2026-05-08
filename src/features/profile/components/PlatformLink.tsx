@@ -1,25 +1,20 @@
 import { PLATFORM_LABELS, PLATFORM_TIER } from '@/shared/types/platform.types';
 import type { Connection } from '@/features/connections/types/connection.types';
+import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 
-const PLATFORM_GLYPH: Record<string, string> = {
-  ebay: 'eB', paypal: 'PP', vinted: 'Vt', kleinanzeigen: 'KA',
-  website: '◉', etsy: 'Et', github: 'Gh', linkedin: 'in',
-  discogs: 'Dc', willhaben: 'Wh', shpock: 'Sh', custom: '+',
-};
-
-const PLATFORM_BG: Record<string, string> = {
-  ebay: 'bg-blue-600',
-  paypal: 'bg-sky-700',
-  vinted: 'bg-teal-600',
-  kleinanzeigen: 'bg-warning',
-  website: 'bg-text',
-  etsy: 'bg-orange-700',
-  github: 'bg-zinc-800',
-  linkedin: 'bg-sky-600',
-  discogs: 'bg-zinc-700',
-  willhaben: 'bg-accent',
-  shpock: 'bg-yellow-500',
-  custom: 'bg-elevated',
+const PLATFORM_TILE: Record<string, { bg: string; fg: string }> = {
+  ebay:          { bg: 'bg-blue-600',   fg: 'text-white' },
+  paypal:        { bg: 'bg-sky-700',    fg: 'text-white' },
+  vinted:        { bg: 'bg-teal-600',   fg: 'text-white' },
+  kleinanzeigen: { bg: 'bg-[#1D4B00]',  fg: 'text-white' },
+  etsy:          { bg: 'bg-orange-700', fg: 'text-white' },
+  github:        { bg: 'bg-zinc-800',   fg: 'text-white' },
+  linkedin:      { bg: 'bg-sky-600',    fg: 'text-white' },
+  discogs:       { bg: 'bg-zinc-700',   fg: 'text-white' },
+  willhaben:     { bg: 'bg-accent',     fg: 'text-white' },
+  shpock:        { bg: 'bg-yellow-500', fg: 'text-text' },
+  website:       { bg: 'bg-elevated',   fg: 'text-text' },
+  custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };
 
 const TIER_PILL: Record<string, string> = {
@@ -168,13 +163,13 @@ export function PlatformLink({ connection: c }: { connection: Connection }) {
   const clickable = isClickable(c);
   const since = formatYear(c.member_since);
 
+  const tile = PLATFORM_TILE[c.platform] ?? { bg: 'bg-elevated', fg: 'text-text' };
   const inner = (
     <>
       <div
-        aria-hidden
-        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white ${PLATFORM_BG[c.platform] ?? 'bg-text'}`}
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tile.bg} ${tile.fg}`}
       >
-        {PLATFORM_GLYPH[c.platform] ?? '?'}
+        <PlatformIcon platform={c.platform} size={22} />
       </div>
 
       <div className="min-w-0 flex-1">

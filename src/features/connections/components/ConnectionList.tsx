@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Button } from '@/shared/components/ui';
+import { Button, Input } from '@/shared/components/ui';
+import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 import { TrustScoreCard } from './TrustScoreCard';
 import { ActivityLog } from '@/features/activity/components/ActivityLog';
 import { useAuth } from '@/features/auth';
@@ -22,6 +23,7 @@ export function ConnectionList() {
   const remove = useDeleteConnection(authUserId);
   const visibility = useSetVisibility(authUserId);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   if (loading || isLoading) {
     return <p className="text-base text-muted">Lade…</p>;
@@ -30,7 +32,23 @@ export function ConnectionList() {
     return <p className="text-base text-muted">Kein Profil gefunden.</p>;
   }
 
-  const connections = data ?? [];
+  const allConnections = data ?? [];
+  const q = query.trim().toLowerCase();
+  const connections = q
+    ? allConnections.filter((c) => {
+        const label = (
+          (c.platform === 'custom' && c.custom_label) ||
+          PLATFORM_LABELS[c.platform] ||
+          c.platform
+        ).toLowerCase();
+        return (
+          label.includes(q) ||
+          c.platform.toLowerCase().includes(q) ||
+          (c.platform_user_id ?? '').toLowerCase().includes(q) ||
+          (c.verified_name ?? '').toLowerCase().includes(q)
+        );
+      })
+    : allConnections;
   const profileHost =
     typeof window !== 'undefined' ? window.location.host : 'prooved.xyz';
 
@@ -46,20 +64,36 @@ export function ConnectionList() {
         </Link>
       </section>
 
-      {connections.length > 0 && <TrustScoreCard connections={connections} />}
+      {allConnections.length > 0 && <TrustScoreCard connections={allConnections} />}
 
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
           <h2 className="text-lg font-bold text-text">Plattformen</h2>
-          <span className="text-sm text-muted">{connections.length} aktiv</span>
+          <span className="text-sm text-muted">
+            {q ? `${connections.length} / ${allConnections.length}` : `${allConnections.length} aktiv`}
+          </span>
         </div>
 
-        {connections.length === 0 ? (
+        {allConnections.length >= 4 && (
+          <Input
+            type="search"
+            placeholder="Suche nach Plattform, Name oder Handle…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-10 text-sm"
+          />
+        )}
+
+        {allConnections.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-elevated bg-surface p-8 text-center">
             <p className="text-base text-text">Noch keine Plattform verknüpft.</p>
             <p className="mt-1 text-sm text-muted">
               Verknüpfe eBay, PayPal, Vinted oder Kleinanzeigen.
             </p>
+          </div>
+        ) : connections.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-elevated bg-surface p-8 text-center">
+            <p className="text-sm text-muted">Keine Treffer für „{query}"</p>
           </div>
         ) : (
           <ul className="space-y-2">
@@ -155,24 +189,19 @@ function FieldToggle({
   );
 }
 
-const PLATFORM_GLYPH: Record<string, string> = {
-  ebay: 'eB', paypal: 'PP', vinted: 'Vt', kleinanzeigen: 'KA',
-  website: '◉', etsy: 'Et', github: 'Gh', linkedin: 'in',
-  discogs: 'Dc', willhaben: 'Wh', shpock: 'Sh', custom: '+',
-};
-const PLATFORM_BG: Record<string, string> = {
-  ebay: 'bg-blue-600',
-  paypal: 'bg-sky-700',
-  vinted: 'bg-teal-600',
-  kleinanzeigen: 'bg-warning',
-  website: 'bg-text',
-  etsy: 'bg-orange-700',
-  github: 'bg-zinc-800',
-  linkedin: 'bg-sky-600',
-  discogs: 'bg-zinc-700',
-  willhaben: 'bg-accent',
-  shpock: 'bg-yellow-500',
-  custom: 'bg-elevated',
+const PLATFORM_TILE: Record<string, { bg: string; fg: string }> = {
+  ebay:          { bg: 'bg-blue-600',   fg: 'text-white' },
+  paypal:        { bg: 'bg-sky-700',    fg: 'text-white' },
+  vinted:        { bg: 'bg-teal-600',   fg: 'text-white' },
+  kleinanzeigen: { bg: 'bg-[#1D4B00]',  fg: 'text-white' },
+  etsy:          { bg: 'bg-orange-700', fg: 'text-white' },
+  github:        { bg: 'bg-zinc-800',   fg: 'text-white' },
+  linkedin:      { bg: 'bg-sky-600',    fg: 'text-white' },
+  discogs:       { bg: 'bg-zinc-700',   fg: 'text-white' },
+  willhaben:     { bg: 'bg-accent',     fg: 'text-white' },
+  shpock:        { bg: 'bg-yellow-500', fg: 'text-text' },
+  website:       { bg: 'bg-elevated',   fg: 'text-text' },
+  custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };
 const STATUS: Record<ReturnType<typeof deriveStatus>, { label: string; cls: string }> = {
   verified: { label: 'Verifiziert', cls: 'text-accent' },
@@ -209,6 +238,7 @@ function ConnectionRow({
 }) {
   const tier = PLATFORM_TIER[c.platform];
   const status = STATUS[deriveStatus(c)];
+  const tile = PLATFORM_TILE[c.platform] ?? { bg: 'bg-elevated', fg: 'text-text' };
 
   return (
     <div
@@ -220,15 +250,16 @@ function ConnectionRow({
         className="flex w-full items-center gap-4 p-4 text-left transition hover:bg-bg"
       >
         <div
-          aria-hidden
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white ${PLATFORM_BG[c.platform]}`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tile.bg} ${tile.fg}`}
         >
-          {PLATFORM_GLYPH[c.platform]}
+          <PlatformIcon platform={c.platform} size={22} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-text">
-              {PLATFORM_LABELS[c.platform]}
+              {c.platform === 'custom' && c.custom_label
+                ? c.custom_label
+                : PLATFORM_LABELS[c.platform]}
             </span>
             <span className="rounded-full bg-elevated px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-text">
               {tier}
