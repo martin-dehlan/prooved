@@ -68,7 +68,7 @@ export function SlugOnboardingForm({
           <Label htmlFor="slug">Profil-Adresse</Label>
           <div className="flex h-12 items-stretch overflow-hidden rounded-xl border border-elevated bg-surface focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2">
             <span className="flex items-center bg-elevated px-3 text-sm font-medium text-muted">
-              prooved.de/
+              prooved.xyz/
             </span>
             <input
               id="slug"

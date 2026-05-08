@@ -12,7 +12,7 @@ interface SendArgs {
 export async function sendEmail(args: SendArgs): Promise<void> {
   const key = process.env.RESEND_API_KEY;
   if (!key) return; // Silent no-op when not configured
-  const from = process.env.PROOVED_FROM_EMAIL ?? 'Prooved <noreply@prooved.de>';
+  const from = process.env.PROOVED_FROM_EMAIL ?? 'Prooved <noreply@prooved.xyz>';
   try {
     await fetch(RESEND_API, {
       method: 'POST',
@@ -53,7 +53,7 @@ export async function notifyUserOfNewConnection(args: {
     await notifyConnectionAdded({
       email: data.email,
       platform: args.platform,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://prooved-peach.vercel.app',
+      appUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://prooved.xyz',
     });
   } catch (e) {
     console.error('[email] notifyUserOfNewConnection failed', e);

@@ -32,7 +32,7 @@ export function ConnectionList() {
 
   const connections = data ?? [];
   const profileHost =
-    typeof window !== 'undefined' ? window.location.host : 'prooved.de';
+    typeof window !== 'undefined' ? window.location.host : 'prooved.xyz';
 
   return (
     <div className="space-y-8">
