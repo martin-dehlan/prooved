@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/shared/components/ui';
+import { TrustScoreCard } from './TrustScoreCard';
 import { useAuth } from '@/features/auth';
 import {
   useConnections,
@@ -43,6 +44,8 @@ export function ConnectionList() {
           {profileHost}/{appUser.slug}
         </Link>
       </section>
+
+      {connections.length > 0 && <TrustScoreCard connections={connections} />}
 
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
