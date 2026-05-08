@@ -55,6 +55,7 @@ export type Database = {
       connections: {
         Row: {
           created_at: string
+          custom_label: string | null
           expires_at: string | null
           hidden: boolean
           id: string
@@ -83,6 +84,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_label?: string | null
           expires_at?: string | null
           hidden?: boolean
           id?: string
@@ -111,6 +113,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_label?: string | null
           expires_at?: string | null
           hidden?: boolean
           id?: string

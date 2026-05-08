@@ -53,7 +53,28 @@ const MARKETPLACE_PLATFORMS = [
   'willhaben',
   'shpock',
   'discogs',
+  'custom',
 ] as const;
+
+const PLATFORM_DISPLAY: Record<string, string> = {
+  ebay: 'eBay',
+  paypal: 'PayPal',
+  etsy: 'Etsy',
+  vinted: 'Vinted',
+  kleinanzeigen: 'Kleinanzeigen',
+  willhaben: 'Willhaben',
+  shpock: 'Shpock',
+  discogs: 'Discogs',
+  github: 'GitHub',
+  linkedin: 'LinkedIn',
+  website: 'Website',
+  custom: 'Custom',
+};
+
+function nameFor(c: Connection): string {
+  if (c.platform === 'custom' && c.custom_label) return c.custom_label;
+  return PLATFORM_DISPLAY[c.platform] ?? c.platform;
+}
 
 interface ScoreInput {
   connections: Connection[];
@@ -143,16 +164,17 @@ function computeMarketplace(visible: Connection[]): ScoreComponent {
 
   // PayPal counts as identity not marketplace for scoring purposes
   const realMarketplaces = marketplaces.filter((c) => c.platform !== 'paypal');
+  const platformNames = realMarketplaces.map(nameFor).join(' · ');
 
   if (realMarketplaces.length >= 4) {
     earned += 30;
-    detail.push(`+30 ${realMarketplaces.length} Marktplätze`);
+    detail.push(`+30 ${realMarketplaces.length} Marktplätze: ${platformNames}`);
   } else if (realMarketplaces.length >= 2) {
     earned += 20;
-    detail.push(`+20 ${realMarketplaces.length} Marktplätze`);
+    detail.push(`+20 ${realMarketplaces.length} Marktplätze: ${platformNames}`);
   } else if (realMarketplaces.length === 1) {
     earned += 10;
-    detail.push('+10 1 Marktplatz');
+    detail.push(`+10 1 Marktplatz: ${platformNames}`);
   } else {
     detail.push('Keine Marktplatz-Verifikation');
   }
@@ -162,14 +184,15 @@ function computeMarketplace(visible: Connection[]): ScoreComponent {
   if (ebay && (ebay.positive_count ?? 0) + (ebay.negative_count ?? 0) >= 10) {
     const total = (ebay.positive_count ?? 0) + (ebay.negative_count ?? 0);
     const pct = ((ebay.positive_count ?? 0) / total) * 100;
+    const pctFmt = pct.toFixed(1).replace('.', ',');
     if (pct >= 95) {
       earned += 10;
-      detail.push(`+10 ${pct.toFixed(1).replace('.', ',')} % positiv (eBay)`);
+      detail.push(`+10 eBay-Quote: ${pctFmt} % positiv (${total} Bewertungen)`);
     } else if (pct >= 90) {
       earned += 5;
-      detail.push(`+5 ${pct.toFixed(1).replace('.', ',')} % positiv (eBay)`);
+      detail.push(`+5 eBay-Quote: ${pctFmt} % positiv (${total} Bewertungen)`);
     } else {
-      detail.push(`+0 ${pct.toFixed(1).replace('.', ',')} % positiv (eBay)`);
+      detail.push(`+0 eBay-Quote: ${pctFmt} % positiv (zu niedrig für Bonus)`);
     }
   }
 
@@ -194,6 +217,14 @@ function computeVolume(visible: Connection[]): ScoreComponent {
     detail.push(`+5 ${total} Bewertungen`);
   } else {
     detail.push('Noch keine Bewertungen');
+  }
+
+  // Per-platform attribution
+  const breakdown = visible
+    .filter((c) => (c.rating_count ?? 0) > 0)
+    .map((c) => `${nameFor(c)}: ${c.rating_count}`);
+  if (breakdown.length > 0) {
+    detail.push(`Aufteilung: ${breakdown.join(' · ')}`);
   }
 
   return { id: 'volume', label: 'Bewertungs-Volumen', earned, max: 15, detail };

@@ -7,6 +7,10 @@ import { Button, Input, Label } from '@/shared/components/ui';
 import { getBioCode, verifyBioCode } from '@/features/connections/services/connectionService';
 import type { BioCodePlatform } from '@/features/connections/types/connection.schemas';
 
+// BioCodeFlow handles platforms with predefined help-text + URL pattern.
+// Custom uses its own CustomVerifyFlow with user-provided label.
+type ScriptedPlatform = Exclude<BioCodePlatform, 'custom'>;
+
 // Render `[label](url)` as <a>, plain text passes through.
 function renderInline(text: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
@@ -40,7 +44,7 @@ interface PlatformConfig {
   steps: string[];
 }
 
-const CONFIG: Record<BioCodePlatform, PlatformConfig> = {
+const CONFIG: Record<ScriptedPlatform, PlatformConfig> = {
   vinted: {
     label: 'Vinted',
     placeholder: 'https://www.vinted.de/member/12345678-handle',
@@ -98,7 +102,7 @@ const CONFIG: Record<BioCodePlatform, PlatformConfig> = {
   },
 };
 
-export function BioCodeFlow({ platform }: { platform: BioCodePlatform }) {
+export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
   const router = useRouter();
   const cfg = CONFIG[platform];
   const [code, setCode] = useState<string | null>(null);

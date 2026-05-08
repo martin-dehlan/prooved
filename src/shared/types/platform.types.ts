@@ -9,7 +9,8 @@ export type Platform =
   | 'linkedin'
   | 'discogs'
   | 'willhaben'
-  | 'shpock';
+  | 'shpock'
+  | 'custom';
 
 export type Tier = 'gold' | 'silver' | 'bronze';
 export type VerifyMethod = 'oauth' | 'bio_code' | 'scrape' | 'domain_dns';
@@ -44,6 +45,7 @@ export const PLATFORM_LABELS: Record<Platform, string> = {
   discogs: 'Discogs',
   willhaben: 'Willhaben',
   shpock: 'Shpock',
+  custom: 'Andere Plattform',
 };
 
 export const TIER_BADGE: Record<Tier, { label: string; className: string }> = {
@@ -64,6 +66,7 @@ export const PLATFORM_TIER: Record<Platform, Tier> = {
   discogs: 'silver',
   willhaben: 'silver',
   shpock: 'silver',
+  custom: 'silver',
 };
 
 export const PLATFORM_METHOD: Record<Platform, VerifyMethod> = {
@@ -78,4 +81,5 @@ export const PLATFORM_METHOD: Record<Platform, VerifyMethod> = {
   discogs: 'bio_code',
   willhaben: 'bio_code',
   shpock: 'bio_code',
+  custom: 'bio_code',
 };

@@ -23,7 +23,7 @@ const METHOD_LABEL = {
 const PLATFORM_GLYPH: Record<Platform, string> = {
   ebay: 'eB', paypal: 'PP', vinted: 'Vt', kleinanzeigen: 'KA',
   website: '◉', etsy: 'Et', github: 'Gh', linkedin: 'in',
-  discogs: 'Dc', willhaben: 'Wh', shpock: 'Sh',
+  discogs: 'Dc', willhaben: 'Wh', shpock: 'Sh', custom: '+',
 };
 const PLATFORM_BG: Record<Platform, string> = {
   ebay: 'bg-blue-600',
@@ -37,6 +37,7 @@ const PLATFORM_BG: Record<Platform, string> = {
   discogs: 'bg-zinc-700',
   willhaben: 'bg-accent',
   shpock: 'bg-yellow-500',
+  custom: 'bg-elevated',
 };
 const TIER_PILL: Record<string, string> = {
   gold: 'bg-warning text-text',

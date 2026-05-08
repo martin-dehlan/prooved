@@ -26,6 +26,7 @@ export async function POST(req: Request) {
     userId: auth.userId,
     platform: parsed.data.platform,
     platformUrl: parsed.data.platformUrl,
+    customLabel: parsed.data.customLabel,
   });
   return NextResponse.json(result);
 }

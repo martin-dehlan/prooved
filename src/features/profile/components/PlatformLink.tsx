@@ -4,7 +4,7 @@ import type { Connection } from '@/features/connections/types/connection.types';
 const PLATFORM_GLYPH: Record<string, string> = {
   ebay: 'eB', paypal: 'PP', vinted: 'Vt', kleinanzeigen: 'KA',
   website: '◉', etsy: 'Et', github: 'Gh', linkedin: 'in',
-  discogs: 'Dc', willhaben: 'Wh', shpock: 'Sh',
+  discogs: 'Dc', willhaben: 'Wh', shpock: 'Sh', custom: '+',
 };
 
 const PLATFORM_BG: Record<string, string> = {
@@ -19,6 +19,7 @@ const PLATFORM_BG: Record<string, string> = {
   discogs: 'bg-zinc-700',
   willhaben: 'bg-accent',
   shpock: 'bg-yellow-500',
+  custom: 'bg-elevated',
 };
 
 const TIER_PILL: Record<string, string> = {
@@ -51,6 +52,15 @@ function formatPercent(positive: number, negative: number): string | null {
 }
 
 function PrimaryMetric({ c }: { c: Connection }) {
+  // Custom → show domain or URL as proof, no rating
+  if (c.platform === 'custom') {
+    return (
+      <span className="font-medium text-accent">
+        ✓ {c.platform_user_id ?? 'Eigentum verifiziert'}
+      </span>
+    );
+  }
+
   // Website → just show domain as the trust signal
   if (c.platform === 'website') {
     return (
@@ -151,7 +161,10 @@ function PrimaryMetric({ c }: { c: Connection }) {
 
 export function PlatformLink({ connection: c }: { connection: Connection }) {
   const tier = PLATFORM_TIER[c.platform];
-  const label = PLATFORM_LABELS[c.platform];
+  const label =
+    c.platform === 'custom' && c.custom_label
+      ? c.custom_label
+      : PLATFORM_LABELS[c.platform];
   const clickable = isClickable(c);
   const since = formatYear(c.member_since);
 

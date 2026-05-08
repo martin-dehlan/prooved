@@ -39,6 +39,7 @@ import {
   shpockSourceContainsCode,
   resolveShpockSource,
 } from '@/shared/lib/platforms/shpock';
+import { customSourceContainsCode } from '@/shared/lib/platforms/custom';
 import type { BioCodePlatform } from '@/features/connections/types/connection.schemas';
 import { encrypt, decrypt } from '@/shared/lib/crypto';
 import { generateBioCode } from '@/shared/lib/utils/bio-code';
@@ -60,6 +61,7 @@ export async function verifyBioCodeBySource(args: {
   userId: string;
   platform: BioCodePlatform;
   platformUrl: string;
+  customLabel?: string;
 }): Promise<{ verified: boolean; reason?: string }> {
   const code = generateBioCode(args.userId, args.platform);
 
@@ -86,11 +88,14 @@ export async function verifyBioCodeBySource(args: {
       if (!id) return { verified: false, reason: 'URL ungültig — erwarte willhaben.at/seller-profile/...' };
       platformUserId = id;
       result = await willhabenBioContainsCode(id, code);
-    } else {
-      // shpock — accept listing OR profile URL, resolve to userId server-side
+    } else if (args.platform === 'shpock') {
       const source = await resolveShpockSource(args.platformUrl);
       platformUserId = source.userId;
       result = await shpockSourceContainsCode(source, code);
+    } else {
+      // custom — generic URL fetch + code check, no rating extraction
+      result = await customSourceContainsCode(args.platformUrl, code);
+      platformUserId = result.profile.platformUserId ?? args.platformUrl;
     }
   } catch (e) {
     return {
@@ -127,6 +132,7 @@ export async function verifyBioCodeBySource(args: {
         positive_count: result.profile.positiveCount,
         negative_count: result.profile.negativeCount,
         member_since: result.profile.memberSince,
+        custom_label: args.platform === 'custom' ? (args.customLabel ?? null) : null,
       },
       { onConflict: 'user_id,platform' },
     );

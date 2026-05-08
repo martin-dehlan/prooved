@@ -47,6 +47,7 @@ export async function getBioCode(platform: BioCodePlatform): Promise<{ code: str
 export async function verifyBioCode(input: {
   platform: BioCodePlatform;
   platformUrl: string;
+  customLabel?: string;
 }): Promise<{ verified: boolean; reason?: string }> {
   const res = await fetch('/api/verify/bio-code', {
     method: 'POST',
