@@ -3,6 +3,7 @@ import { exchangePayPalCode, fetchPayPalUserInfo } from '@/shared/lib/platforms/
 import { createSupabaseAdmin } from '@/shared/lib/supabase/server';
 import { encrypt } from '@/shared/lib/crypto';
 import { notifyUserOfNewConnection } from '@/shared/lib/email/notify';
+import { logActivity } from '@/shared/lib/activity';
 import { cookies } from 'next/headers';
 
 export async function GET(req: Request) {
@@ -54,6 +55,7 @@ export async function GET(req: Request) {
     );
 
     void notifyUserOfNewConnection({ userId, platform: 'PayPal' });
+    void logActivity({ userId, kind: 'connection_added', platform: 'paypal' });
     return NextResponse.redirect(new URL('/dashboard', process.env.NEXT_PUBLIC_APP_URL ?? url.origin));
   } catch (e) {
     return NextResponse.json(

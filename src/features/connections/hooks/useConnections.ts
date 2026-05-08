@@ -31,6 +31,7 @@ type VisibilityArg = {
   hidden?: boolean;
   show_name?: boolean;
   show_picture?: boolean;
+  paused?: boolean;
 };
 
 export function useSetVisibility(userId: string | null) {

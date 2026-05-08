@@ -64,6 +64,7 @@ export type VisibilityPatch = {
   hidden?: boolean;
   show_name?: boolean;
   show_picture?: boolean;
+  paused?: boolean;
 };
 
 export async function setConnectionVisibility(

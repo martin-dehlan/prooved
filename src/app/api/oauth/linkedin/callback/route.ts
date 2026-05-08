@@ -4,6 +4,7 @@ import { exchangeLinkedInCode, fetchLinkedInProfile } from '@/shared/lib/platfor
 import { createSupabaseAdmin } from '@/shared/lib/supabase/server';
 import { encrypt } from '@/shared/lib/crypto';
 import { notifyUserOfNewConnection } from '@/shared/lib/email/notify';
+import { logActivity } from '@/shared/lib/activity';
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -48,6 +49,7 @@ export async function GET(req: Request) {
     );
 
     void notifyUserOfNewConnection({ userId, platform: 'LinkedIn' });
+    void logActivity({ userId, kind: 'connection_added', platform: 'linkedin' });
     return NextResponse.redirect(
       new URL('/dashboard', process.env.NEXT_PUBLIC_APP_URL ?? url.origin),
     );

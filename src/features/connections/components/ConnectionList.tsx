@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/shared/components/ui';
 import { TrustScoreCard } from './TrustScoreCard';
+import { ActivityLog } from '@/features/activity/components/ActivityLog';
 import { useAuth } from '@/features/auth';
 import {
   useConnections,
@@ -83,6 +84,9 @@ export function ConnectionList() {
                     onToggleVisibility={() =>
                       visibility.mutate({ id: c.id, hidden: !c.hidden })
                     }
+                    onTogglePause={() =>
+                      visibility.mutate({ id: c.id, paused: !c.paused })
+                    }
                     onToggleName={() =>
                       visibility.mutate({ id: c.id, show_name: !c.show_name })
                     }
@@ -104,6 +108,8 @@ export function ConnectionList() {
           </Button>
         </Link>
       </section>
+
+      <ActivityLog />
 
       <section className="flex justify-center gap-6 text-sm text-muted">
         <Link href="/dashboard/privacy" className="hover:text-text hover:underline">
@@ -182,6 +188,7 @@ function ConnectionRow({
   onRefresh,
   onDelete,
   onToggleVisibility,
+  onTogglePause,
   onToggleName,
   onTogglePicture,
   busy,
@@ -193,6 +200,7 @@ function ConnectionRow({
   onRefresh: () => void;
   onDelete: () => void;
   onToggleVisibility: () => void;
+  onTogglePause: () => void;
   onToggleName: () => void;
   onTogglePicture: () => void;
   busy: boolean;
@@ -289,8 +297,22 @@ function ConnectionRow({
           )}
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={onRefresh} disabled={busy}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onRefresh}
+              disabled={busy || c.paused}
+              title={c.paused ? 'Pausiert — wird nicht aktualisiert' : undefined}
+            >
               {busy ? 'Lade…' : 'Aktualisieren'}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onTogglePause}
+              disabled={busy}
+            >
+              {c.paused ? '▶ Fortsetzen' : '⏸ Pausieren'}
             </Button>
             <Button
               size="sm"
@@ -304,6 +326,11 @@ function ConnectionRow({
               Trennen
             </Button>
           </div>
+          {c.paused && (
+            <p className="mt-3 text-xs text-muted">
+              Pausiert — Daten bleiben eingefroren (kein Auto-Refresh).
+            </p>
+          )}
           {c.hidden && (
             <p className="mt-3 text-xs text-muted">
               Versteckt — auf deinem öffentlichen Profil unsichtbar.

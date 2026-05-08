@@ -43,6 +43,7 @@ import type { BioCodePlatform } from '@/features/connections/types/connection.sc
 import { encrypt, decrypt } from '@/shared/lib/crypto';
 import { generateBioCode } from '@/shared/lib/utils/bio-code';
 import { notifyUserOfNewConnection } from '@/shared/lib/email/notify';
+import { logActivity } from '@/shared/lib/activity';
 import type { Platform } from '@/shared/types/platform.types';
 
 const BIO_CODE_TTL_DAYS = 30;
@@ -132,6 +133,11 @@ export async function verifyBioCodeBySource(args: {
 
   if (error) return { verified: false, reason: `DB-Fehler: ${error.message}` };
   void notifyUserOfNewConnection({ userId: args.userId, platform: args.platform });
+  void logActivity({
+    userId: args.userId,
+    kind: 'connection_added',
+    platform: args.platform,
+  });
   return { verified: true };
 }
 
@@ -161,7 +167,15 @@ export async function refreshConnectionData(args: {
   }
 
   if (conn.method === 'oauth' && conn.signed_payload) {
-    return refreshOAuthConnection(args.userId, conn.id, conn.platform, conn.signed_payload);
+    const r = await refreshOAuthConnection(args.userId, conn.id, conn.platform, conn.signed_payload);
+    if (r.ok) {
+      void logActivity({
+        userId: args.userId,
+        kind: 'connection_refreshed',
+        platform: conn.platform,
+      });
+    }
+    return r;
   }
 
   return { ok: false, reason: 'cannot refresh this connection' };

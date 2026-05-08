@@ -9,6 +9,7 @@ import {
 } from '@/shared/lib/platforms/website';
 import { createSupabaseAdmin } from '@/shared/lib/supabase/server';
 import { notifyUserOfNewConnection } from '@/shared/lib/email/notify';
+import { logActivity } from '@/shared/lib/activity';
 
 const schema = z.object({ domain: z.string().min(3).max(255) });
 
@@ -74,5 +75,6 @@ export async function POST(req: Request) {
   );
 
   void notifyUserOfNewConnection({ userId: auth.userId, platform: 'Website' });
+  void logActivity({ userId: auth.userId, kind: 'connection_added', platform: 'website', metadata: { domain } });
   return NextResponse.json({ ok: true });
 }

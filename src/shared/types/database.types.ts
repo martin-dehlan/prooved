@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          created_at: string
+          id: string
+          ip: string | null
+          kind: string
+          metadata: Json | null
+          platform: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip?: string | null
+          kind: string
+          metadata?: Json | null
+          platform?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip?: string | null
+          kind?: string
+          metadata?: Json | null
+          platform?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           created_at: string
@@ -26,6 +64,7 @@ export type Database = {
           method: string
           negative_count: number | null
           on_chain_tx_id: string | null
+          paused: boolean
           platform: string
           platform_url: string
           platform_user_id: string | null
@@ -53,6 +92,7 @@ export type Database = {
           method: string
           negative_count?: number | null
           on_chain_tx_id?: string | null
+          paused?: boolean
           platform: string
           platform_url: string
           platform_user_id?: string | null
@@ -80,6 +120,7 @@ export type Database = {
           method?: string
           negative_count?: number | null
           on_chain_tx_id?: string | null
+          paused?: boolean
           platform?: string
           platform_url?: string
           platform_user_id?: string | null
