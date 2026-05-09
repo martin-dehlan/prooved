@@ -11,6 +11,7 @@ import { discogsAdapter } from './discogs';
 import { willhabenAdapter } from './willhaben';
 import { shpockAdapter } from './shpock';
 import { customAdapter } from './custom';
+import { reverbAdapter } from './reverb';
 
 export const ADAPTERS: Record<Platform, PlatformAdapter> = {
   ebay: ebayAdapter,
@@ -24,6 +25,7 @@ export const ADAPTERS: Record<Platform, PlatformAdapter> = {
   discogs: discogsAdapter,
   willhaben: willhabenAdapter,
   shpock: shpockAdapter,
+  reverb: reverbAdapter,
   custom: customAdapter,
 };
 
@@ -39,5 +41,6 @@ export {
   discogsAdapter,
   willhabenAdapter,
   shpockAdapter,
+  reverbAdapter,
   customAdapter,
 };

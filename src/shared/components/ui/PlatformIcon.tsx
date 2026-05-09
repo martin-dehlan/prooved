@@ -140,6 +140,26 @@ export function PlatformIcon({ platform, size = 20, className }: PlatformIconPro
     );
   }
 
+  // Reverb — stylized "R" with sound wave
+  if (platform === 'reverb') {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        aria-hidden
+        className={className}
+      >
+        <path d="M6 5v14M6 5h6a4 4 0 0 1 0 8h-6M11 13l5 6" />
+        <path d="M19 9c1 1 1 5 0 6" strokeOpacity="0.5" />
+      </svg>
+    );
+  }
+
   // Custom — sparkle
   if (platform === 'custom') {
     return (

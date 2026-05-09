@@ -9,7 +9,7 @@ import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 
 const PLATFORMS: Platform[] = [
   'ebay', 'paypal', 'etsy', 'vinted', 'kleinanzeigen',
-  'willhaben', 'shpock', 'discogs',
+  'willhaben', 'shpock', 'discogs', 'reverb',
   'linkedin', 'github',
   'website', 'custom',
 ];
@@ -19,6 +19,7 @@ const METHOD_LABEL = {
   bio_code: 'Bio-Code',
   scrape: 'Scan',
   domain_dns: 'DNS',
+  token: 'API-Token',
 } as const;
 
 const PLATFORM_TILE: Record<Platform, { bg: string; fg: string }> = {
@@ -32,6 +33,7 @@ const PLATFORM_TILE: Record<Platform, { bg: string; fg: string }> = {
   discogs:       { bg: 'bg-zinc-700',   fg: 'text-white' },
   willhaben:     { bg: 'bg-accent',     fg: 'text-white' },
   shpock:        { bg: 'bg-yellow-500', fg: 'text-text' },
+  reverb:        { bg: 'bg-orange-600', fg: 'text-white' },
   website:       { bg: 'bg-elevated',   fg: 'text-text' },
   custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };

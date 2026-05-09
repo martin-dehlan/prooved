@@ -10,10 +10,11 @@ export type Platform =
   | 'discogs'
   | 'willhaben'
   | 'shpock'
+  | 'reverb'
   | 'custom';
 
 export type Tier = 'gold' | 'silver' | 'bronze';
-export type VerifyMethod = 'oauth' | 'bio_code' | 'scrape' | 'domain_dns';
+export type VerifyMethod = 'oauth' | 'bio_code' | 'scrape' | 'domain_dns' | 'token';
 
 export interface PlatformProfile {
   platformUserId: string | null;
@@ -45,6 +46,7 @@ export const PLATFORM_LABELS: Record<Platform, string> = {
   discogs: 'Discogs',
   willhaben: 'Willhaben',
   shpock: 'Shpock',
+  reverb: 'Reverb',
   custom: 'Andere Plattform',
 };
 
@@ -66,6 +68,7 @@ export const PLATFORM_TIER: Record<Platform, Tier> = {
   discogs: 'silver',
   willhaben: 'silver',
   shpock: 'silver',
+  reverb: 'silver',
   custom: 'silver',
 };
 
@@ -81,5 +84,6 @@ export const PLATFORM_METHOD: Record<Platform, VerifyMethod> = {
   discogs: 'bio_code',
   willhaben: 'bio_code',
   shpock: 'bio_code',
+  reverb: 'token',
   custom: 'bio_code',
 };

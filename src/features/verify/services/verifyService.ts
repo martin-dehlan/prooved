@@ -184,7 +184,53 @@ export async function refreshConnectionData(args: {
     return r;
   }
 
+  if (conn.method === 'token' && conn.signed_payload && conn.platform === 'reverb') {
+    return refreshReverbConnection(args.userId, conn.id, conn.signed_payload);
+  }
+
   return { ok: false, reason: 'cannot refresh this connection' };
+}
+
+async function refreshReverbConnection(
+  userId: string,
+  connectionId: string,
+  encryptedPayload: string,
+): Promise<{ ok: boolean; reason?: string }> {
+  const supabase = createSupabaseAdmin();
+
+  let stored: { access_token?: string };
+  try {
+    stored = JSON.parse(decrypt(encryptedPayload));
+  } catch {
+    return { ok: false, reason: 'token decrypt failed' };
+  }
+  if (!stored.access_token) return { ok: false, reason: 'no token stored' };
+
+  try {
+    const profile = await (
+      await import('@/shared/lib/platforms/reverb')
+    ).fetchReverbProfile(stored.access_token);
+    const now = new Date();
+    await supabase
+      .from('connections')
+      .update({
+        last_fetched: now.toISOString(),
+        rating_score: profile.ratingScore,
+        rating_count: profile.ratingCount,
+        positive_count: profile.positiveCount,
+        negative_count: profile.negativeCount,
+        member_since: profile.memberSince,
+        platform_url: profile.url,
+        platform_user_id: profile.platformUserId,
+        custom_label: profile.shopName,
+      })
+      .eq('id', connectionId)
+      .eq('user_id', userId);
+    void logActivity({ userId, kind: 'connection_refreshed', platform: 'reverb' });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: e instanceof Error ? e.message : 'refresh failed' };
+  }
 }
 
 async function refreshOAuthConnection(

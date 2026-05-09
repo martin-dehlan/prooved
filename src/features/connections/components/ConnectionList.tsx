@@ -224,6 +224,7 @@ const PLATFORM_TILE: Record<string, { bg: string; fg: string }> = {
   discogs:       { bg: 'bg-zinc-700',   fg: 'text-white' },
   willhaben:     { bg: 'bg-accent',     fg: 'text-white' },
   shpock:        { bg: 'bg-yellow-500', fg: 'text-text' },
+  reverb:        { bg: 'bg-orange-600', fg: 'text-white' },
   website:       { bg: 'bg-elevated',   fg: 'text-text' },
   custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };
