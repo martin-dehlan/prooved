@@ -4,20 +4,26 @@ import { useState } from 'react';
 import { computeTrust, type Tier } from '@/shared/lib/trust';
 import type { Connection } from '@/features/connections/types/connection.types';
 
-const TIER_STYLE: Record<Tier, string> = {
-  neu: 'bg-elevated text-muted',
-  bronze: 'bg-warning/15 text-warning',
-  silver: 'bg-elevated text-text',
-  gold: 'bg-warning text-bg',
-  diamond: 'bg-accent text-white',
+const TIER_BG: Record<Tier, string> = {
+  neu: 'bg-elevated',
+  bronze: 'bg-warning/30',
+  silver: 'bg-elevated',
+  gold: 'bg-warning',
+  diamond: 'bg-accent',
 };
-
-const TIER_GLYPH: Record<Tier, string> = {
-  neu: '◌',
-  bronze: '◐',
-  silver: '◑',
-  gold: '◕',
-  diamond: '◆',
+const TIER_TEXT: Record<Tier, string> = {
+  neu: 'text-muted',
+  bronze: 'text-warning',
+  silver: 'text-text',
+  gold: 'text-bg',
+  diamond: 'text-white',
+};
+const TIER_BAR: Record<Tier, string> = {
+  neu: 'bg-muted',
+  bronze: 'bg-warning',
+  silver: 'bg-text/60',
+  gold: 'bg-warning',
+  diamond: 'bg-accent',
 };
 
 export function TrustScoreCard({ connections }: { connections: Connection[] }) {
@@ -25,80 +31,88 @@ export function TrustScoreCard({ connections }: { connections: Connection[] }) {
   const score = computeTrust({ connections });
 
   return (
-    <section className="space-y-3 rounded-2xl border border-elevated bg-surface p-5">
-      <header className="flex items-baseline justify-between">
-        <h2 className="text-lg font-bold text-text">Dein Trust-Score</h2>
+    <section className="space-y-3 rounded-lg border border-elevated bg-surface p-4">
+      <header className="flex items-baseline justify-between gap-2">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Trust-Score
+        </h2>
         <span
-          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${TIER_STYLE[score.tier]}`}
+          className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${TIER_BG[score.tier]} ${TIER_TEXT[score.tier]}`}
         >
-          <span aria-hidden>{TIER_GLYPH[score.tier]}</span>
           {score.tierLabel}
         </span>
       </header>
 
       <div className="flex items-baseline gap-2">
-        <span className="text-4xl font-bold text-text">{score.total}</span>
-        <span className="text-sm text-muted">/ 100</span>
+        <span className="text-3xl font-semibold tabular-nums text-text">
+          {score.total}
+        </span>
+        <span className="text-xs text-muted">/ 100</span>
       </div>
 
-      <div className="h-2 overflow-hidden rounded-full bg-elevated">
+      <div className="h-1 overflow-hidden rounded-full bg-elevated">
         <div
-          className="h-full rounded-full bg-accent transition-all"
+          className={`h-full rounded-full transition-all ${TIER_BAR[score.tier]}`}
           style={{ width: `${score.total}%` }}
         />
       </div>
 
+      {score.qualityCapped && (
+        <p className="rounded-md bg-danger/10 px-2.5 py-1.5 text-[11px] text-danger">
+          ⚠ Quote unter 70 % — Score auf Bronze begrenzt.
+        </p>
+      )}
+
+      {score.suggestions.length > 0 && (
+        <ul className="space-y-1 border-t border-elevated pt-3">
+          {score.suggestions.map((s, i) => (
+            <li key={i} className="flex items-baseline gap-2 text-xs">
+              <span className="tabular-nums font-semibold text-accent">+{s.delta}</span>
+              <span className="text-text">{s.text}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="text-xs font-medium text-muted underline-offset-2 hover:text-text hover:underline"
+        className="text-[11px] text-muted underline-offset-2 hover:text-text hover:underline"
       >
-        {open ? 'Breakdown verbergen' : 'Breakdown anzeigen'}
+        {open ? 'Details verbergen' : 'Details anzeigen'}
       </button>
 
       {open && (
         <div className="space-y-3 border-t border-elevated pt-3">
-          {score.components.map((c) => (
-            <div key={c.id} className="space-y-1">
-              <div className="flex items-baseline justify-between text-sm">
-                <span className="text-muted">{c.label}</span>
-                <span className="font-medium text-text">
-                  {c.earned > 0 ? '+' : ''}
-                  {c.earned}
-                  {c.max > 0 ? ` / ${c.max}` : ''}
-                </span>
-              </div>
-              {c.max > 0 && (
-                <div className="h-1.5 overflow-hidden rounded-full bg-elevated">
-                  <div
-                    className="h-full rounded-full bg-accent transition-all"
-                    style={{ width: `${Math.max(0, (c.earned / c.max) * 100)}%` }}
-                  />
+          {score.components
+            .filter((c) => c.id !== 'penalty' || c.earned !== 0)
+            .map((c) => (
+              <div key={c.id} className="space-y-1">
+                <div className="flex items-baseline justify-between text-xs">
+                  <span className="text-muted">{c.label}</span>
+                  <span className="tabular-nums font-medium text-text">
+                    {c.earned > 0 ? '+' : ''}
+                    {c.earned}
+                    {c.max > 0 && <span className="text-muted">/{c.max}</span>}
+                  </span>
                 </div>
-              )}
-              {c.detail.length > 0 && (
-                <ul className="ml-1 mt-1 space-y-0.5 text-xs text-muted">
-                  {c.detail.map((d, i) => (
-                    <li key={i}>• {d}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {score.suggestions.length > 0 && (
-        <div className="space-y-2 rounded-xl bg-elevated p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            So erhöhst du deinen Score
-          </p>
-          {score.suggestions.map((s, i) => (
-            <div key={i} className="flex items-baseline gap-2 text-sm">
-              <span className="font-bold text-accent">+{s.delta}</span>
-              <span className="text-text">{s.text}</span>
-            </div>
-          ))}
+                {c.max > 0 && (
+                  <div className="h-0.5 overflow-hidden rounded-full bg-elevated">
+                    <div
+                      className="h-full rounded-full bg-accent transition-all"
+                      style={{ width: `${Math.max(0, (c.earned / c.max) * 100)}%` }}
+                    />
+                  </div>
+                )}
+                {c.detail.length > 0 && (
+                  <ul className="space-y-0.5 pt-1 text-[11px] text-muted">
+                    {c.detail.map((d, i) => (
+                      <li key={i}>{d}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
         </div>
       )}
     </section>

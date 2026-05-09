@@ -157,7 +157,7 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
   return (
     <div className="space-y-4">
       <ol className="space-y-4">
-        <li className="rounded-2xl border border-elevated bg-surface p-5">
+        <li className="rounded-lg border border-elevated bg-surface p-4">
           <p className="text-sm font-semibold text-text">
             1. Kopier diesen Code
           </p>
@@ -180,7 +180,7 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
           </button>
         </li>
 
-        <li className="rounded-2xl border border-elevated bg-surface p-5">
+        <li className="rounded-lg border border-elevated bg-surface p-4">
           <div className="flex items-baseline justify-between">
             <p className="text-sm font-semibold text-text">
               2. {cfg.label}-URL hier einfügen

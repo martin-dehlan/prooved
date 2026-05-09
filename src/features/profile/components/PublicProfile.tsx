@@ -10,24 +10,23 @@ import {
 import { CopyLinkButton } from './CopyLinkButton';
 import { PlatformLink } from './PlatformLink';
 
-// Pick best avatar source — KYC-grade first.
-function pickAvatar(connections: Connection[]): {
-  url: string;
-  source: string;
-} | null {
+const SOURCE_LABEL: Record<string, string> = {
+  paypal: 'PayPal',
+  linkedin: 'LinkedIn',
+  github: 'GitHub',
+};
+
+function pickAvatar(connections: Connection[]): { url: string } | null {
   const order: Connection['platform'][] = ['paypal', 'linkedin', 'github'];
   for (const platform of order) {
     const c = connections.find(
       (x) => x.platform === platform && x.show_picture && x.verified_picture_url,
     );
-    if (c?.verified_picture_url) {
-      return { url: c.verified_picture_url, source: platform };
-    }
+    if (c?.verified_picture_url) return { url: c.verified_picture_url };
   }
   return null;
 }
 
-// Pick name to spotlight under handle — first connection that allows it.
 function pickVerifiedName(connections: Connection[]): {
   name: string;
   source: string;
@@ -37,18 +36,20 @@ function pickVerifiedName(connections: Connection[]): {
     const c = connections.find(
       (x) => x.platform === platform && x.show_name && x.verified_name,
     );
-    if (c?.verified_name) {
-      return { name: c.verified_name, source: platform };
-    }
+    if (c?.verified_name) return { name: c.verified_name, source: platform };
   }
   return null;
 }
 
-const SOURCE_LABEL: Record<string, string> = {
-  paypal: 'PayPal',
-  linkedin: 'LinkedIn',
-  github: 'GitHub',
-};
+function oldestYear(connections: Connection[]): number | null {
+  let oldest = Infinity;
+  for (const c of connections) {
+    if (!c.member_since) continue;
+    const t = new Date(c.member_since).getTime();
+    if (!Number.isNaN(t) && t < oldest) oldest = t;
+  }
+  return oldest === Infinity ? null : new Date(oldest).getFullYear();
+}
 
 export function PublicProfile({
   data,
@@ -66,247 +67,243 @@ export function PublicProfile({
       .map((s) => s[0]?.toUpperCase() ?? '')
       .join('') || user.slug[0]?.toUpperCase();
 
-  const verifiedCount = connections.length;
   const score = computeTrust({ connections });
   const avatar = pickAvatar(connections);
   const verifiedName = pickVerifiedName(connections);
   const nameCheck = checkNameConsistency(connections);
   const proovedSince = formatMonthYear(user.created_at);
+  const activeSince = oldestYear(connections);
+
+  const warnings: { kind: 'danger' | 'warning'; text: string }[] = [];
+  if (score.qualityCapped) {
+    warnings.push({
+      kind: 'danger',
+      text: 'Bewertungs-Quote unter 70 % — Score auf Bronze begrenzt.',
+    });
+  }
+  if (nameCheck.hasMismatch) {
+    warnings.push({
+      kind: 'warning',
+      text: `${nameCheck.names.length} verschiedene Klarnamen verknüpft.`,
+    });
+  }
 
   return (
     <div className="min-h-screen bg-bg">
-      {isOwner && (
-        <div className="sticky top-0 z-10 border-b border-elevated bg-surface/80 backdrop-blur">
-          <div className="mx-auto flex max-w-md items-center justify-between px-5 py-2 text-sm">
-            <span className="text-muted">Du siehst dein eigenes Profil</span>
-            <Link
-              href="/dashboard"
-              className="font-semibold text-accent hover:underline"
-            >
-              Zum Dashboard →
-            </Link>
-          </div>
-        </div>
-      )}
-      <div className="mx-auto flex max-w-md flex-col px-5 py-10 sm:py-14">
-        <header className="flex flex-col items-center text-center">
+      {isOwner && <OwnerBar />}
+
+      <div className="mx-auto max-w-md px-5 py-8 sm:py-12">
+        <header className="flex items-center gap-4">
           {avatar ? (
             <Image
               src={avatar.url}
               alt={display}
-              width={96}
-              height={96}
-              className="h-24 w-24 rounded-full object-cover ring-2 ring-elevated"
+              width={72}
+              height={72}
+              className="h-[72px] w-[72px] rounded-full object-cover"
               referrerPolicy="no-referrer"
               unoptimized
             />
           ) : (
             <div
               aria-hidden
-              className="flex h-24 w-24 items-center justify-center rounded-full bg-text text-3xl font-bold text-bg"
+              className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-text text-2xl font-semibold text-bg"
             >
               {initials}
             </div>
           )}
-          <h1 className="mt-5 text-2xl font-bold text-text">{display}</h1>
-          <p className="mt-1 text-sm text-muted">@{user.slug}</p>
-
-          {verifiedName && (
-            <p className="mt-2 inline-flex items-center gap-1 text-sm text-text">
-              <CheckIcon className="h-3.5 w-3.5 text-accent" />
-              <span>
-                <span className="font-medium text-text">{verifiedName.name}</span>
-                <span className="text-muted">
-                  {' '}
-                  · laut {SOURCE_LABEL[verifiedName.source] ?? verifiedName.source}
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-semibold text-text sm:text-2xl">
+              {display}
+            </h1>
+            <p className="truncate text-sm text-muted">
+              @{user.slug}
+              {proovedSince && (
+                <span className="text-muted/70"> · seit {proovedSince}</span>
+              )}
+            </p>
+            {verifiedName && (
+              <p className="mt-1 flex items-center gap-1 text-xs text-text">
+                <CheckIcon className="h-3 w-3 text-accent" />
+                <span className="truncate">
+                  {verifiedName.name}
+                  <span className="text-muted">
+                    {' '}
+                    · {SOURCE_LABEL[verifiedName.source] ?? verifiedName.source}-verifiziert
+                  </span>
                 </span>
-              </span>
-            </p>
-          )}
-
-          {proovedSince && (
-            <p className="mt-1 text-xs text-muted">
-              Auf Prooved seit {proovedSince}
-            </p>
-          )}
-
-          {nameCheck.hasMismatch && (
-            <div className="mt-3 w-full rounded-xl bg-warning/10 px-4 py-2 text-left text-xs text-warning">
-              <p className="font-semibold">⚠ Verschiedene Klarnamen verknüpft</p>
-              <p className="mt-1 text-warning/80">
-                {nameCheck.names
-                  .map((n) => `${n.name} (${SOURCE_LABEL[n.source] ?? n.source})`)
-                  .join(' · ')}
               </p>
-            </div>
-          )}
-
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <TierBadge tier={score.tier} label={score.tierLabel} score={score.total} />
-            <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 font-semibold text-white">
-              <CheckIcon className="h-3 w-3" /> {verifiedCount} verifiziert
-            </span>
+            )}
           </div>
-
-          {score.qualityCapped && (
-            <div className="mt-3 w-full rounded-xl bg-danger/10 px-4 py-2 text-left text-xs text-danger">
-              <p className="font-semibold">⚠ Score wegen schlechter Bewertungs-Quote begrenzt</p>
-              <p className="mt-1 text-danger/80">
-                Aggregierte positive Quote unter 70 % — Tier auf Bronze limitiert,
-                unabhängig von Anzahl verknüpfter Plattformen.
-              </p>
-            </div>
-          )}
-
-          <ScoreBar
-            total={score.total}
-            tierLabel={score.tierLabel}
-            components={score.components}
-          />
-
-          {(score.totalRatings > 0 || score.aggregatePositivePct != null) && (
-            <dl className="mt-6 grid w-full grid-cols-3 gap-2 rounded-2xl border border-elevated bg-surface px-2 py-4 text-center">
-              <PercentStat pct={score.aggregatePositivePct} />
-              <Stat
-                value={
-                  score.totalRatings > 0
-                    ? score.totalRatings.toLocaleString('de-DE')
-                    : '–'
-                }
-                label="Bewertungen"
-              />
-              <Stat
-                value={oldestYearLabel(connections)}
-                label="aktiv"
-              />
-            </dl>
-          )}
         </header>
 
-        <main className="mt-8 space-y-3">
-          {connections.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-elevated bg-surface p-8 text-center text-sm text-muted">
-              Noch keine verifizierten Plattformen.
-            </p>
-          ) : (
-            connections.map((c) => <PlatformLink key={c.id} connection={c} />)
-          )}
-        </main>
+        <ScoreInline score={score} />
 
-        <footer className="mt-10 flex flex-col items-center gap-3">
+        {warnings.length > 0 && (
+          <ul className="mt-3 space-y-1.5 text-xs">
+            {warnings.map((w, i) => (
+              <li
+                key={i}
+                className={`flex items-start gap-2 rounded-md px-3 py-2 ${
+                  w.kind === 'danger'
+                    ? 'bg-danger/10 text-danger'
+                    : 'bg-warning/10 text-warning'
+                }`}
+              >
+                <span aria-hidden>⚠</span>
+                <span>{w.text}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {(score.totalRatings > 0 || score.aggregatePositivePct != null || activeSince) && (
+          <div className="mt-5 grid grid-cols-3 gap-2 border-y border-elevated py-4 text-center">
+            <PercentMini pct={score.aggregatePositivePct} />
+            <Mini
+              value={
+                score.totalRatings > 0
+                  ? score.totalRatings.toLocaleString('de-DE')
+                  : '–'
+              }
+              label="Bewertungen"
+            />
+            <Mini
+              value={activeSince ? String(activeSince) : '–'}
+              label={activeSince ? 'aktiv seit' : 'aktiv'}
+            />
+          </div>
+        )}
+
+        <h2 className="mt-8 mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+          Plattformen
+        </h2>
+        {connections.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-elevated bg-surface p-6 text-center text-sm text-muted">
+            Noch keine verifizierten Plattformen.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {connections.map((c) => (
+              <PlatformLink key={c.id} connection={c} />
+            ))}
+          </ul>
+        )}
+
+        <ScoreBreakdown score={score} />
+
+        <footer className="mt-12 flex flex-col items-center gap-4 text-xs text-muted">
           <CopyLinkButton slug={user.slug} />
-          <Link
-            href={`/${user.slug}/report`}
-            className="text-sm text-muted underline-offset-4 hover:text-text hover:underline"
-          >
-            Profil melden
-          </Link>
-          <Link
-            href="/how-it-works"
-            className="text-xs text-muted underline-offset-4 hover:text-text hover:underline"
-          >
-            Was ist Prooved?
-          </Link>
-          <span className="mt-2 text-xs text-muted">Powered by Prooved</span>
+          <nav className="flex items-center gap-3">
+            <Link
+              href={`/${user.slug}/report`}
+              className="hover:text-text hover:underline"
+            >
+              Profil melden
+            </Link>
+            <span aria-hidden className="text-elevated">
+              ·
+            </span>
+            <Link
+              href="/how-it-works"
+              className="hover:text-text hover:underline"
+            >
+              Was ist Prooved?
+            </Link>
+          </nav>
+          <span className="text-muted/60">Powered by Prooved</span>
         </footer>
       </div>
     </div>
   );
 }
 
-function oldestYearLabel(connections: Connection[]): string {
-  let oldestMs = Infinity;
-  for (const c of connections) {
-    if (!c.member_since) continue;
-    const t = new Date(c.member_since).getTime();
-    if (!Number.isNaN(t) && t < oldestMs) oldestMs = t;
-  }
-  if (oldestMs === Infinity) return '–';
-  return `seit ${new Date(oldestMs).getFullYear()}`;
-}
-
-function PercentStat({ pct }: { pct: number | null }) {
-  if (pct == null) {
-    return <Stat value="–" label="positiv" />;
-  }
-  const fmt = `${pct.toFixed(1).replace('.', ',')} %`;
-  let cls = 'text-text';
-  if (pct < 50) cls = 'text-danger';
-  else if (pct < 90) cls = 'text-warning';
-  else if (pct >= 95) cls = 'text-accent';
+function OwnerBar() {
   return (
-    <div>
-      <dt className="text-xs font-medium text-muted">positiv</dt>
-      <dd className={`mt-0.5 text-base font-bold ${cls}`}>{fmt}</dd>
+    <div className="sticky top-0 z-10 border-b border-elevated bg-surface/90 backdrop-blur">
+      <div className="mx-auto flex max-w-md items-center justify-between px-5 py-2 text-xs">
+        <span className="text-muted">Dein Profil</span>
+        <Link
+          href="/dashboard"
+          className="font-medium text-accent hover:underline"
+        >
+          Dashboard →
+        </Link>
+      </div>
     </div>
   );
 }
 
-const TIER_STYLE: Record<Tier, string> = {
-  neu: 'bg-elevated text-muted ring-elevated',
-  bronze: 'bg-warning/15 text-warning ring-warning/30',
-  silver: 'bg-elevated text-text ring-elevated',
-  gold: 'bg-warning text-bg ring-warning',
-  diamond: 'bg-accent text-white ring-accent',
+const TIER_BG: Record<Tier, string> = {
+  neu: 'bg-elevated',
+  bronze: 'bg-warning/30',
+  silver: 'bg-elevated',
+  gold: 'bg-warning',
+  diamond: 'bg-accent',
+};
+const TIER_TEXT: Record<Tier, string> = {
+  neu: 'text-muted',
+  bronze: 'text-warning',
+  silver: 'text-text',
+  gold: 'text-bg',
+  diamond: 'text-white',
+};
+const TIER_BAR: Record<Tier, string> = {
+  neu: 'bg-muted',
+  bronze: 'bg-warning',
+  silver: 'bg-text/60',
+  gold: 'bg-warning',
+  diamond: 'bg-accent',
 };
 
-const TIER_GLYPH: Record<Tier, string> = {
-  neu: '◌',
-  bronze: '◐',
-  silver: '◑',
-  gold: '◕',
-  diamond: '◆',
-};
-
-function TierBadge({ tier, label, score }: { tier: Tier; label: string; score: number }) {
+function ScoreInline({ score }: { score: ReturnType<typeof computeTrust> }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-bold uppercase tracking-wide ring-1 ring-inset ${TIER_STYLE[tier]}`}
-    >
-      <span aria-hidden>{TIER_GLYPH[tier]}</span>
-      {label} · {score}
-    </span>
+    <div className="mt-5 flex items-center gap-3">
+      <span
+        className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${TIER_BG[score.tier]} ${TIER_TEXT[score.tier]}`}
+      >
+        {score.tierLabel}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="h-1 overflow-hidden rounded-full bg-elevated">
+          <div
+            className={`h-full rounded-full transition-all ${TIER_BAR[score.tier]}`}
+            style={{ width: `${score.total}%` }}
+          />
+        </div>
+      </div>
+      <span className="shrink-0 tabular-nums text-sm font-semibold text-text">
+        {score.total}
+        <span className="text-muted">/100</span>
+      </span>
+    </div>
   );
 }
 
-function ScoreBar({
-  total,
-  tierLabel,
-  components,
-}: {
-  total: number;
-  tierLabel: string;
-  components: { id: string; label: string; earned: number; max: number; detail: string[] }[];
-}) {
+function ScoreBreakdown({ score }: { score: ReturnType<typeof computeTrust> }) {
   return (
-    <details className="mt-4 w-full rounded-2xl border border-elevated bg-surface text-left">
-      <summary className="flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3 text-sm">
-        <span className="text-muted">
-          Vertrauens-Score{' '}
-          <span className="font-bold text-text">
-            {total} / 100
-          </span>{' '}
-          · {tierLabel}
-        </span>
-        <span aria-hidden className="text-muted">
+    <details className="group mt-6 text-sm">
+      <summary className="flex cursor-pointer items-center justify-between rounded-md py-2 text-xs text-muted hover:text-text">
+        <span>Score-Breakdown</span>
+        <span className="transition group-open:rotate-180" aria-hidden>
           ⌄
         </span>
       </summary>
-      <div className="space-y-2 border-t border-elevated px-4 py-3 text-sm">
-        {components
+      <div className="mt-2 space-y-3 rounded-lg border border-elevated bg-surface p-4">
+        {score.components
           .filter((c) => c.id !== 'penalty' || c.earned !== 0)
           .map((c) => (
             <div key={c.id} className="space-y-1">
-              <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline justify-between text-xs">
                 <span className="text-muted">{c.label}</span>
-                <span className="font-medium text-text">
+                <span className="tabular-nums font-medium text-text">
                   {c.earned > 0 ? '+' : ''}
                   {c.earned}
-                  {c.max > 0 ? ` / ${c.max}` : ''}
+                  {c.max > 0 && <span className="text-muted">/{c.max}</span>}
                 </span>
               </div>
               {c.max > 0 && (
-                <div className="h-1.5 overflow-hidden rounded-full bg-elevated">
+                <div className="h-0.5 overflow-hidden rounded-full bg-elevated">
                   <div
                     className="h-full rounded-full bg-accent transition-all"
                     style={{
@@ -316,19 +313,18 @@ function ScoreBar({
                 </div>
               )}
               {c.detail.length > 0 && (
-                <ul className="ml-1 mt-1 space-y-0.5 text-xs text-muted">
+                <ul className="space-y-0.5 pt-1 text-[11px] text-muted">
                   {c.detail.map((d, i) => (
-                    <li key={i}>• {d}</li>
+                    <li key={i}>{d}</li>
                   ))}
                 </ul>
               )}
             </div>
           ))}
-        <p className="pt-2 text-xs text-muted">
-          Berechnet aus deinen verifizierten Plattformen. Keine Black-Box,
-          keine versteckten Faktoren.{' '}
+        <p className="border-t border-elevated pt-3 text-[11px] text-muted">
+          Berechnet aus deinen verifizierten Plattformen.{' '}
           <Link href="/how-it-works" className="underline">
-            Wie funktioniert das?
+            Mehr erfahren
           </Link>
         </p>
       </div>
@@ -336,11 +332,26 @@ function ScoreBar({
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+function Mini({ value, label }: { value: string; label: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-muted">{label}</dt>
-      <dd className="mt-0.5 text-base font-bold text-text">{value}</dd>
+      <div className="text-base font-semibold text-text tabular-nums">{value}</div>
+      <div className="text-[10px] uppercase tracking-wider text-muted">{label}</div>
+    </div>
+  );
+}
+
+function PercentMini({ pct }: { pct: number | null }) {
+  if (pct == null) return <Mini value="–" label="positiv" />;
+  let cls = 'text-text';
+  if (pct < 50) cls = 'text-danger';
+  else if (pct < 90) cls = 'text-warning';
+  else if (pct >= 95) cls = 'text-accent';
+  const fmt = `${pct.toFixed(1).replace('.', ',')} %`;
+  return (
+    <div>
+      <div className={`text-base font-semibold tabular-nums ${cls}`}>{fmt}</div>
+      <div className="text-[10px] uppercase tracking-wider text-muted">positiv</div>
     </div>
   );
 }

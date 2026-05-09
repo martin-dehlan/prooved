@@ -32,33 +32,16 @@ const KIND_LABEL: Record<Kind, string> = {
   connection_removed: 'getrennt',
   connection_refreshed: 'aktualisiert',
   connection_hidden: 'versteckt',
-  connection_shown: 'wieder sichtbar',
+  connection_shown: 'sichtbar',
   connection_paused: 'pausiert',
   connection_resumed: 'fortgesetzt',
   connection_field_toggled: 'Anzeige geändert',
-  rating_drop_detected: '⚠ Bewertung gefallen',
+  rating_drop_detected: 'Bewertung gefallen',
   login: 'eingeloggt',
-  profile_updated: 'Profil aktualisiert',
+  profile_updated: 'aktualisiert',
   wallet_connected: 'Wallet verbunden',
   wallet_disconnected: 'Wallet getrennt',
   export_generated: 'Export erstellt',
-};
-
-const KIND_ICON: Record<Kind, string> = {
-  connection_added: '+',
-  connection_removed: '−',
-  connection_refreshed: '↻',
-  connection_hidden: '🙈',
-  connection_shown: '👁',
-  connection_paused: '⏸',
-  connection_resumed: '▶',
-  connection_field_toggled: '⚙',
-  rating_drop_detected: '⚠',
-  login: '→',
-  profile_updated: '✎',
-  wallet_connected: '◎',
-  wallet_disconnected: '◌',
-  export_generated: '⬇',
 };
 
 function formatRelative(iso: string): string {
@@ -82,44 +65,42 @@ export function ActivityLog() {
       .catch(() => setEvents([]));
   }, []);
 
-  if (!events) {
-    return (
-      <p className="text-sm text-muted">Lade Aktivität…</p>
-    );
-  }
-  if (events.length === 0) {
-    return null;
-  }
+  if (!events || events.length === 0) return null;
 
   const visible = open ? events : events.slice(0, 5);
 
   return (
-    <section className="space-y-2 rounded-2xl border border-elevated bg-surface p-5">
+    <section className="space-y-2">
       <header className="flex items-baseline justify-between">
-        <h2 className="text-base font-bold text-text">Letzte Aktivität</h2>
-        <span className="text-xs text-muted">{events.length}</span>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Aktivität
+        </h2>
+        <span className="text-xs text-muted tabular-nums">{events.length}</span>
       </header>
-      <ul className="space-y-2">
+      <ul className="space-y-1.5">
         {visible.map((e) => {
           const platform = e.platform
             ? PLATFORM_LABELS[e.platform as keyof typeof PLATFORM_LABELS] ?? e.platform
             : null;
+          const isWarn = e.kind === 'rating_drop_detected';
           return (
-            <li key={e.id} className="flex items-start gap-3 text-sm">
-              <span
-                aria-hidden
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-elevated text-xs"
-              >
-                {KIND_ICON[e.kind] ?? '·'}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-text">
-                  {platform && <span className="font-medium">{platform}</span>}
-                  {platform ? ' ' : ''}
+            <li
+              key={e.id}
+              className="flex items-baseline justify-between gap-3 text-xs"
+            >
+              <span className="min-w-0 flex-1 truncate">
+                {platform && (
+                  <span className={isWarn ? 'font-medium text-warning' : 'font-medium text-text'}>
+                    {platform}{' '}
+                  </span>
+                )}
+                <span className={isWarn ? 'text-warning' : 'text-muted'}>
                   {KIND_LABEL[e.kind] ?? e.kind}
-                </p>
-                <p className="text-xs text-muted">{formatRelative(e.created_at)}</p>
-              </div>
+                </span>
+              </span>
+              <span className="shrink-0 text-muted tabular-nums">
+                {formatRelative(e.created_at)}
+              </span>
             </li>
           );
         })}
@@ -128,9 +109,9 @@ export function ActivityLog() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="text-xs font-medium text-muted underline-offset-2 hover:text-text hover:underline"
+          className="text-[11px] text-muted underline-offset-2 hover:text-text hover:underline"
         >
-          {open ? 'weniger anzeigen' : `alle ${events.length} anzeigen`}
+          {open ? 'weniger' : `alle ${events.length} anzeigen`}
         </button>
       )}
     </section>

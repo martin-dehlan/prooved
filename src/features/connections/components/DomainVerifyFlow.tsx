@@ -45,7 +45,7 @@ export function DomainVerifyFlow() {
   return (
     <div className="space-y-4">
       {code && (
-        <div className="space-y-3 rounded-2xl border border-elevated bg-surface p-5">
+        <div className="space-y-3 rounded-lg border border-elevated bg-surface p-4">
           <div>
             <p className="text-sm font-semibold text-text">
               1. TXT-Record bei deinem DNS-Provider setzen

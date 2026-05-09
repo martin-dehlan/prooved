@@ -26,10 +26,10 @@ export function ConnectionList() {
   const [query, setQuery] = useState('');
 
   if (loading || isLoading) {
-    return <p className="text-base text-muted">Lade…</p>;
+    return <p className="text-sm text-muted">Lade…</p>;
   }
   if (!appUser) {
-    return <p className="text-base text-muted">Kein Profil gefunden.</p>;
+    return <p className="text-sm text-muted">Kein Profil gefunden.</p>;
   }
 
   const allConnections = data ?? [];
@@ -53,12 +53,14 @@ export function ConnectionList() {
     typeof window !== 'undefined' ? window.location.host : 'prooved.xyz';
 
   return (
-    <div className="space-y-8">
-      <section className="text-center">
-        <p className="text-sm font-medium text-muted">Dein Profil</p>
+    <div className="space-y-6">
+      <section>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Dein Profil
+        </p>
         <Link
           href={`/${appUser.slug}`}
-          className="mt-1 inline-block break-all text-xl font-bold text-text hover:underline"
+          className="mt-1 inline-block break-all text-base font-medium text-text underline-offset-4 hover:text-accent hover:underline"
         >
           {profileHost}/{appUser.slug}
         </Link>
@@ -67,34 +69,38 @@ export function ConnectionList() {
       {allConnections.length > 0 && <TrustScoreCard connections={allConnections} />}
 
       <section className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-lg font-bold text-text">Plattformen</h2>
-          <span className="text-sm text-muted">
-            {q ? `${connections.length} / ${allConnections.length}` : `${allConnections.length} aktiv`}
+        <header className="flex items-baseline justify-between">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Plattformen
+          </h2>
+          <span className="text-xs text-muted tabular-nums">
+            {q
+              ? `${connections.length} / ${allConnections.length}`
+              : `${allConnections.length} aktiv`}
           </span>
-        </div>
+        </header>
 
         {allConnections.length >= 4 && (
           <Input
             type="search"
-            placeholder="Suche nach Plattform, Name oder Handle…"
+            placeholder="Suche…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="h-10 text-sm"
+            className="h-9 text-sm"
           />
         )}
 
         {allConnections.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-elevated bg-surface p-8 text-center">
-            <p className="text-base text-text">Noch keine Plattform verknüpft.</p>
-            <p className="mt-1 text-sm text-muted">
-              Verknüpfe eBay, PayPal, Vinted oder Kleinanzeigen.
+          <div className="rounded-lg border border-dashed border-elevated bg-surface p-6 text-center">
+            <p className="text-sm text-text">Noch keine Plattform verknüpft.</p>
+            <p className="mt-1 text-xs text-muted">
+              Verknüpfe eBay, PayPal, Vinted oder eine andere Plattform.
             </p>
           </div>
         ) : connections.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-elevated bg-surface p-8 text-center">
-            <p className="text-sm text-muted">Keine Treffer für „{query}"</p>
-          </div>
+          <p className="rounded-lg border border-dashed border-elevated bg-surface p-6 text-center text-sm text-muted">
+            Keine Treffer für „{query}"
+          </p>
         ) : (
           <ul className="space-y-2">
             {connections.map((c) => {
@@ -137,19 +143,23 @@ export function ConnectionList() {
         )}
 
         <Link href="/dashboard/connect" className="block">
-          <Button variant="primary" size="lg" block>
-            + Plattform hinzufügen
+          <Button variant="primary" size="md" block>
+            Plattform hinzufügen
           </Button>
         </Link>
       </section>
 
       <ActivityLog />
 
-      <section className="flex justify-center gap-6 text-sm text-muted">
+      <nav className="flex justify-center gap-3 text-xs text-muted">
+        <Link href="/how-it-works" className="hover:text-text hover:underline">
+          Wie funktioniert das?
+        </Link>
+        <span aria-hidden>·</span>
         <Link href="/dashboard/privacy" className="hover:text-text hover:underline">
           Datenschutz
         </Link>
-      </section>
+      </nav>
     </div>
   );
 }
@@ -170,18 +180,18 @@ function FieldToggle({
       type="button"
       onClick={onToggle}
       disabled={disabled}
-      className="flex w-full items-center justify-between text-left text-sm disabled:opacity-50"
+      className="flex w-full items-center justify-between text-left text-xs disabled:opacity-50"
     >
       <span className="text-text">{label}</span>
       <span
         aria-pressed={enabled}
-        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ${
+        className={`relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition ${
           enabled ? 'bg-accent' : 'bg-elevated'
         }`}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-surface transition ${
-            enabled ? 'translate-x-4' : 'translate-x-0.5'
+          className={`inline-block h-3 w-3 rounded-full bg-surface transition ${
+            enabled ? 'translate-x-3.5' : 'translate-x-0.5'
           }`}
         />
       </span>
@@ -203,12 +213,19 @@ const PLATFORM_TILE: Record<string, { bg: string; fg: string }> = {
   website:       { bg: 'bg-elevated',   fg: 'text-text' },
   custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };
+
 const STATUS: Record<ReturnType<typeof deriveStatus>, { label: string; cls: string }> = {
-  verified: { label: 'Verifiziert', cls: 'text-accent' },
-  expiring: { label: 'Läuft bald ab', cls: 'text-warning' },
-  expired: { label: 'Abgelaufen', cls: 'text-danger' },
-  pending: { label: 'Ausstehend', cls: 'text-muted' },
-  temporarily_unavailable: { label: 'Nicht verfügbar', cls: 'text-warning' },
+  verified: { label: 'verifiziert', cls: 'text-accent' },
+  expiring: { label: 'läuft bald ab', cls: 'text-warning' },
+  expired: { label: 'abgelaufen', cls: 'text-danger' },
+  pending: { label: 'ausstehend', cls: 'text-muted' },
+  temporarily_unavailable: { label: 'nicht verfügbar', cls: 'text-warning' },
+};
+
+const TIER_DOT: Record<string, string> = {
+  gold: 'bg-warning',
+  silver: 'bg-muted/40',
+  bronze: 'bg-warning/40',
 };
 
 function ConnectionRow({
@@ -239,49 +256,60 @@ function ConnectionRow({
   const tier = PLATFORM_TIER[c.platform];
   const status = STATUS[deriveStatus(c)];
   const tile = PLATFORM_TILE[c.platform] ?? { bg: 'bg-elevated', fg: 'text-text' };
+  const label =
+    c.platform === 'custom' && c.custom_label
+      ? c.custom_label
+      : PLATFORM_LABELS[c.platform];
+  const stateChips: string[] = [];
+  if (c.hidden) stateChips.push('versteckt');
+  if (c.paused) stateChips.push('pausiert');
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl border bg-surface ${c.hidden ? 'border-elevated opacity-70' : 'border-elevated'}`}
+      className={`overflow-hidden rounded-lg border bg-surface transition ${
+        c.hidden ? 'border-elevated opacity-60' : 'border-elevated'
+      }`}
     >
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center gap-4 p-4 text-left transition hover:bg-bg"
+        className="flex w-full items-center gap-3 p-3 text-left transition hover:bg-bg"
       >
         <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tile.bg} ${tile.fg}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${tile.bg} ${tile.fg}`}
         >
-          <PlatformIcon platform={c.platform} size={22} />
+          <PlatformIcon platform={c.platform} size={20} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-text">
-              {c.platform === 'custom' && c.custom_label
-                ? c.custom_label
-                : PLATFORM_LABELS[c.platform]}
-            </span>
-            <span className="rounded-full bg-elevated px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-text">
-              {tier}
-            </span>
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-medium text-text">{label}</span>
+            <span
+              className={`h-1.5 w-1.5 shrink-0 rounded-full ${TIER_DOT[tier] ?? 'bg-muted/40'}`}
+              title={tier}
+            />
           </div>
-          <p className={`mt-0.5 text-sm ${status.cls}`}>{status.label}</p>
+          <p className={`text-xs ${status.cls}`}>
+            {status.label}
+            {stateChips.length > 0 && (
+              <span className="text-muted"> · {stateChips.join(' · ')}</span>
+            )}
+          </p>
         </div>
         <span
           aria-hidden
-          className={`text-muted transition ${expanded ? 'rotate-180' : ''}`}
+          className={`text-muted transition-transform ${expanded ? 'rotate-180' : ''}`}
         >
           ⌄
         </span>
       </button>
 
       {expanded && (
-        <div className="border-t border-elevated bg-bg p-4">
-          <dl className="grid grid-cols-2 gap-y-2 text-sm">
+        <div className="space-y-3 border-t border-elevated bg-bg p-3 text-sm">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
             {c.rating_score != null && (
               <>
                 <dt className="text-muted">Bewertung</dt>
-                <dd className="font-medium text-text">
+                <dd className="text-text tabular-nums">
                   ★ {c.rating_score.toFixed(1)}
                   {c.rating_count != null && ` · ${c.rating_count}`}
                 </dd>
@@ -290,7 +318,7 @@ function ConnectionRow({
             {c.verified_at && (
               <>
                 <dt className="text-muted">Verifiziert</dt>
-                <dd className="text-text">
+                <dd className="text-text tabular-nums">
                   {new Date(c.verified_at).toLocaleDateString('de-DE')}
                 </dd>
               </>
@@ -298,16 +326,17 @@ function ConnectionRow({
             {c.expires_at && (
               <>
                 <dt className="text-muted">Läuft ab</dt>
-                <dd className="text-text">
+                <dd className="text-text tabular-nums">
                   {new Date(c.expires_at).toLocaleDateString('de-DE')}
                 </dd>
               </>
             )}
           </dl>
+
           {(c.verified_name || c.verified_picture_url) && !c.hidden && (
-            <div className="mt-4 space-y-2 rounded-xl bg-surface p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                Auf deinem Profil zeigen
+            <div className="space-y-1.5 rounded-md bg-surface p-2.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
+                Öffentlich zeigen
               </p>
               {c.verified_name && (
                 <FieldToggle
@@ -328,15 +357,15 @@ function ConnectionRow({
             </div>
           )}
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             <Button
               size="sm"
               variant="outline"
               onClick={onRefresh}
               disabled={busy || c.paused}
-              title={c.paused ? 'Pausiert — wird nicht aktualisiert' : undefined}
+              title={c.paused ? 'Pausiert' : undefined}
             >
-              {busy ? 'Lade…' : 'Aktualisieren'}
+              {busy ? '…' : 'Aktualisieren'}
             </Button>
             <Button
               size="sm"
@@ -344,7 +373,7 @@ function ConnectionRow({
               onClick={onTogglePause}
               disabled={busy}
             >
-              {c.paused ? '▶ Fortsetzen' : '⏸ Pausieren'}
+              {c.paused ? 'Fortsetzen' : 'Pausieren'}
             </Button>
             <Button
               size="sm"
@@ -352,30 +381,21 @@ function ConnectionRow({
               onClick={onToggleVisibility}
               disabled={busy}
             >
-              {c.hidden ? '👁 Anzeigen' : '🙈 Verstecken'}
+              {c.hidden ? 'Anzeigen' : 'Verstecken'}
             </Button>
             <Button size="sm" variant="ghost" onClick={onDelete} disabled={busy}>
               Trennen
             </Button>
           </div>
-          {c.paused && (
-            <p className="mt-3 text-xs text-muted">
-              Pausiert — Daten bleiben eingefroren (kein Auto-Refresh).
-            </p>
-          )}
-          {c.hidden && (
-            <p className="mt-3 text-xs text-muted">
-              Versteckt — auf deinem öffentlichen Profil unsichtbar.
-            </p>
-          )}
+
           {c.last_error && (
-            <p className="mt-3 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">
-              Letzter Refresh-Fehler: {c.last_error}
+            <p className="rounded-md bg-warning/10 px-2.5 py-1.5 text-[11px] text-warning">
+              Refresh-Fehler: {c.last_error}
             </p>
           )}
           {errorMessage && (
-            <p className="mt-3 rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
-              Fehler: {errorMessage}
+            <p className="rounded-md bg-danger/10 px-2.5 py-1.5 text-[11px] text-danger">
+              {errorMessage}
             </p>
           )}
         </div>

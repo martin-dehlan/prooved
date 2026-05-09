@@ -18,10 +18,10 @@ const PLATFORM_TILE: Record<string, { bg: string; fg: string }> = {
   custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };
 
-const TIER_PILL: Record<string, string> = {
-  gold: 'bg-warning text-text',
-  silver: 'bg-elevated text-text',
-  bronze: 'bg-warning/30 text-warning',
+const TIER_DOT: Record<string, string> = {
+  gold: 'bg-warning',
+  silver: 'bg-muted/40',
+  bronze: 'bg-warning/40',
 };
 
 function isClickable(c: Connection): boolean {
@@ -33,126 +33,78 @@ function formatYear(d: string | null): string | null {
   if (!d) return null;
   const dt = new Date(d);
   if (Number.isNaN(dt.getTime())) {
-    // German "DD.MM.YYYY" fallback
     const m = d.match(/(\d{4})/);
     return m ? m[1]! : null;
   }
   return String(dt.getFullYear());
 }
 
-function formatPercent(positive: number, negative: number): string | null {
-  const total = positive + negative;
-  if (total === 0) return null;
-  const pct = (positive / total) * 100;
-  return `${pct.toFixed(1).replace('.', ',')} %`;
-}
-
-function PrimaryMetric({ c }: { c: Connection }) {
-  // Custom → show domain or URL as proof, no rating
-  if (c.platform === 'custom') {
-    return (
-      <span className="font-medium text-accent">
-        ✓ {c.platform_user_id ?? 'Eigentum verifiziert'}
-      </span>
-    );
+function metricFor(c: Connection): { primary: string; secondary?: string; tone?: 'good' | 'bad' | 'neutral' } | null {
+  if (c.platform === 'custom' || c.platform === 'website') {
+    return {
+      primary: c.platform_user_id ?? 'verifiziert',
+      tone: 'good',
+    };
   }
-
-  // Website → just show domain as the trust signal
-  if (c.platform === 'website') {
-    return (
-      <span className="font-medium text-accent">
-        ✓ {c.platform_user_id ?? 'Domain verifiziert'}
-      </span>
-    );
-  }
-
-  // GitHub → name (if shown) + login, repos as activity signal
   if (c.platform === 'github') {
-    const handle = c.platform_user_id ? `@${c.platform_user_id}` : null;
+    const handle = c.platform_user_id ? `@${c.platform_user_id}` : '';
     const repos = c.rating_count;
-    const showName = c.show_name && c.verified_name;
-    return (
-      <>
-        {showName && (
-          <span className="font-medium text-text">{c.verified_name}</span>
-        )}
-        {handle && (
-          <span className="text-muted">
-            {showName ? '· ' : ''}
-            {handle}
-          </span>
-        )}
-        {repos != null && repos > 0 && (
-          <span className="text-muted">· {repos} Repos</span>
-        )}
-        {!showName && !handle && (
-          <span className="font-medium text-accent">✓ Verifiziert</span>
-        )}
-      </>
-    );
-  }
-
-  // LinkedIn → KYC name (if shown)
-  if (c.platform === 'linkedin') {
-    if (c.show_name && c.verified_name) {
-      return (
-        <span className="font-medium text-accent">
-          ✓ {c.verified_name}
-        </span>
-      );
+    const name = c.show_name && c.verified_name ? c.verified_name : null;
+    if (name) {
+      return {
+        primary: name,
+        secondary: [handle, repos != null && repos > 0 ? `${repos} Repos` : null]
+          .filter(Boolean)
+          .join(' · '),
+      };
     }
-    return <span className="font-medium text-accent">✓ Identität verifiziert</span>;
-  }
-
-  // PayPal → KYC name as trust signal (no rating data on PayPal)
-  if (c.platform === 'paypal') {
-    if (c.show_name && c.verified_name) {
-      return (
-        <span className="font-medium text-accent">
-          ✓ {c.verified_name}
-        </span>
-      );
+    if (handle) {
+      return {
+        primary: handle,
+        secondary: repos != null && repos > 0 ? `${repos} Repos` : undefined,
+      };
     }
-    return <span className="font-medium text-accent">✓ Identität verifiziert</span>;
+    return { primary: 'verifiziert', tone: 'good' };
   }
-
-  // eBay → % positiv (native trust metric)
+  if (c.platform === 'linkedin' || c.platform === 'paypal') {
+    if (c.show_name && c.verified_name) {
+      return { primary: c.verified_name, tone: 'good' };
+    }
+    return { primary: 'Identität verifiziert', tone: 'good' };
+  }
   if (c.platform === 'ebay') {
     const pos = c.positive_count ?? 0;
     const neg = c.negative_count ?? 0;
-    const pct = formatPercent(pos, neg);
-    if (pct) {
-      return (
-        <>
-          <span className="font-semibold text-text">{pct} positiv</span>
-          {c.rating_count != null && (
-            <span className="text-muted">· {c.rating_count} Bewertungen</span>
-          )}
-        </>
-      );
+    const total = pos + neg;
+    if (total >= 1) {
+      const pct = (pos / total) * 100;
+      const fmt = `${pct.toFixed(1).replace('.', ',')} % positiv`;
+      const count = c.rating_count;
+      const tone: 'good' | 'bad' | 'neutral' =
+        pct >= 95 ? 'good' : pct < 80 ? 'bad' : 'neutral';
+      return {
+        primary: fmt,
+        secondary: count != null ? `${count} Bewertungen` : undefined,
+        tone,
+      };
     }
     if (c.rating_count && c.rating_count > 0) {
-      return <span className="font-medium text-text">{c.rating_count} Bewertungen</span>;
+      return { primary: `${c.rating_count} Bewertungen` };
     }
-    return <span className="font-medium text-accent">✓ Identität verifiziert</span>;
+    return { primary: 'verifiziert', tone: 'good' };
   }
-
-  // Vinted / Kleinanzeigen → stars
+  // vinted / kleinanzeigen / willhaben / shpock / discogs / etsy → stars
   const score = c.rating_score;
   if (score != null && score > 0) {
-    return (
-      <>
-        <span className="font-semibold text-text">★ {score.toFixed(1)}</span>
-        {c.rating_count != null && (
-          <span className="text-muted">· {c.rating_count} Bewertungen</span>
-        )}
-      </>
-    );
+    return {
+      primary: `★ ${score.toFixed(1)}`,
+      secondary: c.rating_count != null ? `${c.rating_count} Bewertungen` : undefined,
+    };
   }
   if (c.rating_count && c.rating_count > 0) {
-    return <span className="font-medium text-text">{c.rating_count} Bewertungen</span>;
+    return { primary: `${c.rating_count} Bewertungen` };
   }
-  return <span className="font-medium text-accent">✓ Identität verifiziert</span>;
+  return { primary: 'verifiziert', tone: 'good' };
 }
 
 export function PlatformLink({ connection: c }: { connection: Connection }) {
@@ -165,73 +117,80 @@ export function PlatformLink({ connection: c }: { connection: Connection }) {
   const since = formatYear(c.member_since);
   const suspect = isSuspectMembership(c);
   const activity = formatActivity(c.last_fetched);
-
+  const metric = metricFor(c);
   const tile = PLATFORM_TILE[c.platform] ?? { bg: 'bg-elevated', fg: 'text-text' };
-  const inner = (
-    <>
+
+  const primaryTone =
+    metric?.tone === 'good'
+      ? 'text-accent'
+      : metric?.tone === 'bad'
+        ? 'text-danger'
+        : 'text-text';
+
+  const body = (
+    <div className="flex items-center gap-3 rounded-lg border border-elevated bg-surface p-3 transition hover:border-muted/50">
       <div
-        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tile.bg} ${tile.fg}`}
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${tile.bg} ${tile.fg}`}
       >
-        <PlatformIcon platform={c.platform} size={22} />
+        <PlatformIcon platform={c.platform} size={20} />
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-base font-semibold text-text">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-sm font-medium text-text">
             {label}
           </span>
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${TIER_PILL[tier]}`}
-          >
-            {tier}
-          </span>
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${TIER_DOT[tier] ?? 'bg-muted/40'}`}
+            aria-label={tier}
+            title={tier}
+          />
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-muted">
-          <PrimaryMetric c={c} />
+        {metric && (
+          <div className="flex items-center gap-1.5 text-[13px] leading-tight">
+            <span className={`font-medium ${primaryTone}`}>{metric.primary}</span>
+            {metric.secondary && (
+              <span className="truncate text-muted">· {metric.secondary}</span>
+            )}
+          </div>
+        )}
+        <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted">
+          {since && (
+            <span className={suspect.flagged ? 'text-warning' : ''}>
+              seit {since}
+              {suspect.flagged && ' ⚠'}
+            </span>
+          )}
+          {activity && since && <span aria-hidden>·</span>}
+          {activity && <span>{activity}</span>}
         </div>
-        {since && (
-          <p
-            className={`mt-0.5 text-xs ${suspect.flagged ? 'text-warning' : 'text-muted'}`}
-          >
-            Mitglied seit {since}
-            {suspect.flagged && ' · ⚠ ungewöhnlich'}
-          </p>
-        )}
-        {suspect.flagged && suspect.reason && (
-          <p className="mt-0.5 text-[11px] text-warning/80">{suspect.reason}</p>
-        )}
-        {activity && (
-          <p className="mt-0.5 text-[11px] text-muted">{activity}</p>
-        )}
       </div>
 
       {clickable && (
         <span
           aria-hidden
-          className="text-muted transition group-hover:translate-x-0.5 group-hover:text-text"
+          className="shrink-0 text-muted/60 transition group-hover:translate-x-0.5 group-hover:text-text"
         >
           →
         </span>
       )}
-    </>
+    </div>
   );
 
-  if (clickable) {
-    return (
-      <a
-        href={c.platform_url!}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group flex items-center gap-4 rounded-2xl border border-elevated bg-surface p-4 transition hover:-translate-y-0.5 hover:border-elevated hover:shadow-sm"
-      >
-        {inner}
-      </a>
-    );
-  }
-
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-elevated bg-surface p-4">
-      {inner}
-    </div>
+    <li className={clickable ? 'group' : undefined}>
+      {clickable ? (
+        <a
+          href={c.platform_url!}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+        >
+          {body}
+        </a>
+      ) : (
+        body
+      )}
+    </li>
   );
 }

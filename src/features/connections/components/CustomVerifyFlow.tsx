@@ -64,7 +64,7 @@ export function CustomVerifyFlow() {
   return (
     <div className="space-y-4">
       <ol className="space-y-4">
-        <li className="rounded-2xl border border-elevated bg-surface p-5">
+        <li className="rounded-lg border border-elevated bg-surface p-4">
           <p className="text-sm font-semibold text-text">1. Kopier diesen Code</p>
           <p className="mt-1 text-sm text-muted">
             Pack ihn auf der Plattform deiner Wahl in Profil-Bio, Anzeigen-Titel,
@@ -85,7 +85,7 @@ export function CustomVerifyFlow() {
           </button>
         </li>
 
-        <li className="space-y-3 rounded-2xl border border-elevated bg-surface p-5">
+        <li className="space-y-3 rounded-lg border border-elevated bg-surface p-4">
           <p className="text-sm font-semibold text-text">2. Plattform-Name + URL</p>
           <div className="space-y-2">
             <Label htmlFor="label">Wie heißt die Plattform?</Label>
@@ -114,7 +114,7 @@ export function CustomVerifyFlow() {
           </div>
         </li>
 
-        <li className="rounded-2xl border border-elevated bg-surface p-5">
+        <li className="rounded-lg border border-elevated bg-surface p-4">
           <p className="text-sm font-semibold text-text">3. Verifizieren</p>
           <Button
             onClick={verify}

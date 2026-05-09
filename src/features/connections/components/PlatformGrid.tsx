@@ -15,15 +15,12 @@ const PLATFORMS: Platform[] = [
 ];
 
 const METHOD_LABEL = {
-  oauth: 'OAuth Login',
+  oauth: 'OAuth',
   bio_code: 'Bio-Code',
-  scrape: 'Profil-Scan',
-  domain_dns: 'DNS-Record',
+  scrape: 'Scan',
+  domain_dns: 'DNS',
 } as const;
 
-// Brand-color tile bg + icon-color combos.
-// Brand-strong platforms get colored tile w/ white icon.
-// Conceptual platforms (website, custom) get neutral tile.
 const PLATFORM_TILE: Record<Platform, { bg: string; fg: string }> = {
   ebay:          { bg: 'bg-blue-600',   fg: 'text-white' },
   paypal:        { bg: 'bg-sky-700',    fg: 'text-white' },
@@ -39,15 +36,15 @@ const PLATFORM_TILE: Record<Platform, { bg: string; fg: string }> = {
   custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };
 
-const TIER_PILL: Record<string, string> = {
-  gold: 'bg-warning text-text',
-  silver: 'bg-elevated text-text',
-  bronze: 'bg-warning/30 text-warning',
+const TIER_DOT: Record<string, string> = {
+  gold: 'bg-warning',
+  silver: 'bg-muted/40',
+  bronze: 'bg-warning/40',
 };
 
 export function PlatformGrid() {
   return (
-    <ul className="space-y-2">
+    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {PLATFORMS.map((p) => {
         const tier = PLATFORM_TIER[p];
         const tile = PLATFORM_TILE[p];
@@ -55,29 +52,31 @@ export function PlatformGrid() {
           <li key={p}>
             <Link
               href={`/dashboard/connect/${p}`}
-              className="flex items-center gap-4 rounded-2xl border border-elevated bg-surface p-4 transition hover:-translate-y-0.5 hover:border-muted"
+              className="group flex items-center gap-3 rounded-lg border border-elevated bg-surface p-3 transition hover:border-muted/50"
             >
               <div
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tile.bg} ${tile.fg}`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${tile.bg} ${tile.fg}`}
               >
-                <PlatformIcon platform={p} size={22} />
+                <PlatformIcon platform={p} size={20} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-text">
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-medium text-text">
                     {PLATFORM_LABELS[p]}
                   </span>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${TIER_PILL[tier]}`}
-                  >
-                    {tier}
-                  </span>
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${TIER_DOT[tier] ?? 'bg-muted/40'}`}
+                    title={tier}
+                  />
                 </div>
-                <p className="mt-0.5 text-sm text-muted">
+                <p className="text-[11px] text-muted">
                   {METHOD_LABEL[PLATFORM_METHOD[p]]}
                 </p>
               </div>
-              <span aria-hidden className="text-muted">
+              <span
+                aria-hidden
+                className="shrink-0 text-muted/60 transition group-hover:translate-x-0.5 group-hover:text-text"
+              >
                 →
               </span>
             </Link>
