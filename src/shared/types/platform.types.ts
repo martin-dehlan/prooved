@@ -84,6 +84,6 @@ export const PLATFORM_METHOD: Record<Platform, VerifyMethod> = {
   discogs: 'bio_code',
   willhaben: 'bio_code',
   shpock: 'bio_code',
-  reverb: 'token',
+  reverb: 'bio_code',
   custom: 'bio_code',
 };

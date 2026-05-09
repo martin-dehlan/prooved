@@ -1,99 +1,121 @@
-// Source: Reverb API v3 — Personal Access Token auth.
-// Docs: https://reverb.com/page/api
-// PAT generated in Reverb account settings → API & Integrations.
-// We use it like an OAuth access_token (Bearer header).
+// Source: Reverb API v3 — server uses static REVERB_API_TOKEN (public-data scope).
+// User-binding via bio-code in shop description (no per-user OAuth available).
+// Docs: https://www.reverb.com/swagger#/
 
 import type { PlatformAdapter, PlatformProfile } from '@/shared/types/platform.types';
 
 const API = 'https://api.reverb.com/api';
-const REQUIRED_HEADERS = {
+const HEADERS = (token: string) => ({
   'Accept-Version': '3.0',
-  'Content-Type': 'application/hal+json',
   Accept: 'application/hal+json',
+  'Content-Type': 'application/hal+json',
+  Authorization: `Bearer ${token}`,
   'User-Agent': 'Prooved/1.0 (+https://prooved.xyz)',
-};
-
-interface ReverbAccount {
-  email?: string;
-  first_name?: string;
-  last_name?: string;
-  shop?: {
-    id?: number | string;
-    name?: string;
-    slug?: string;
-    _links?: { web?: { href?: string } };
-  };
-}
-
-interface ReverbShopFeedback {
-  count?: number;
-  rating?: number;
-  positive?: number;
-  negative?: number;
-  neutral?: number;
-}
+});
 
 interface ReverbShop {
   id?: number | string;
   name?: string;
   slug?: string;
+  description?: string;
+  about?: string;
   created_at?: string;
-  feedback_summary?: ReverbShopFeedback;
+  feedback_summary?: {
+    count?: number;
+    rating?: number;
+    positive?: number;
+    negative?: number;
+  };
   _links?: { web?: { href?: string } };
 }
 
-async function fetchJson<T>(url: string, token: string): Promise<T> {
-  const res = await fetch(url, {
+/** Extract slug from a Reverb shop URL or accept bare slug. */
+export function extractReverbSlug(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  const m =
+    trimmed.match(/reverb\.com\/(?:shop|s)\/([a-zA-Z0-9_.-]+)/) ??
+    trimmed.match(/^([a-zA-Z0-9_.-]+)$/);
+  return m ? m[1]! : null;
+}
+
+export interface ReverbScrape {
+  description: string;
+  shop: ReverbShop;
+  url: string;
+  ratingScore: number | null;
+  ratingCount: number | null;
+  positiveCount: number | null;
+  negativeCount: number | null;
+  memberSince: string | null;
+}
+
+export async function scrapeReverbShop(slug: string): Promise<ReverbScrape> {
+  const token = process.env.REVERB_API_TOKEN;
+  if (!token) throw new Error('REVERB_API_TOKEN env not configured');
+
+  const res = await fetch(`${API}/shops/${encodeURIComponent(slug)}`, {
     method: 'GET',
     signal: AbortSignal.timeout(8000),
-    headers: { ...REQUIRED_HEADERS, Authorization: `Bearer ${token}` },
+    headers: HEADERS(token),
   });
-  if (!res.ok) {
-    throw new Error(`Reverb API ${url} failed: ${res.status}`);
-  }
-  return (await res.json()) as T;
-}
+  if (!res.ok) throw new Error(`Reverb shop fetch failed: ${res.status}`);
 
-export interface ReverbProfile extends PlatformProfile {
-  shopName: string | null;
-  shopSlug: string | null;
-}
-
-export async function fetchReverbProfile(token: string): Promise<ReverbProfile> {
-  const account = await fetchJson<ReverbAccount>(`${API}/my/account`, token);
-
-  // Try shop endpoint — most users won't have a shop, that's ok
-  let shop: ReverbShop | null = null;
-  try {
-    shop = await fetchJson<ReverbShop>(`${API}/my/shop`, token);
-  } catch {
-    shop = null;
-  }
-
-  const fb = shop?.feedback_summary;
-  const shopUrl =
-    shop?._links?.web?.href ??
-    (shop?.slug ? `https://reverb.com/shop/${shop.slug}` : 'https://reverb.com');
+  const shop = (await res.json()) as ReverbShop;
+  const description = shop.description ?? shop.about ?? '';
+  const fb = shop.feedback_summary;
+  const url =
+    shop._links?.web?.href ??
+    (shop.slug ? `https://reverb.com/shop/${shop.slug}` : `https://reverb.com/shop/${slug}`);
 
   return {
-    platformUserId: shop?.slug ?? account.shop?.slug ?? account.email ?? null,
-    url: shopUrl,
+    description,
+    shop,
+    url,
     ratingScore: typeof fb?.rating === 'number' ? fb.rating : null,
     ratingCount: typeof fb?.count === 'number' ? fb.count : null,
     positiveCount: typeof fb?.positive === 'number' ? fb.positive : null,
     negativeCount: typeof fb?.negative === 'number' ? fb.negative : null,
-    memberSince: shop?.created_at ?? null,
-    shopName: shop?.name ?? null,
-    shopSlug: shop?.slug ?? null,
+    memberSince: shop.created_at ?? null,
+  };
+}
+
+export async function reverbBioContainsCode(
+  slug: string,
+  code: string,
+): Promise<{ matched: boolean; profile: PlatformProfile; shopName: string | null }> {
+  const data = await scrapeReverbShop(slug);
+  return {
+    matched: data.description.includes(code),
+    shopName: data.shop.name ?? null,
+    profile: {
+      platformUserId: data.shop.slug ?? slug,
+      url: data.url,
+      ratingScore: data.ratingScore,
+      ratingCount: data.ratingCount,
+      positiveCount: data.positiveCount,
+      negativeCount: data.negativeCount,
+      memberSince: data.memberSince,
+    },
   };
 }
 
 export const reverbAdapter: PlatformAdapter = {
   platform: 'reverb',
   tier: 'silver',
-  method: 'oauth',
-  async fetchProfile({ accessToken }) {
-    if (!accessToken) throw new Error('Reverb requires personal access token');
-    return fetchReverbProfile(accessToken);
+  method: 'bio_code',
+  async fetchProfile({ url, userId }) {
+    const slug = userId ?? (url ? extractReverbSlug(url) : null);
+    if (!slug) throw new Error('Reverb requires shop URL or slug');
+    const data = await scrapeReverbShop(slug);
+    return {
+      platformUserId: data.shop.slug ?? slug,
+      url: data.url,
+      ratingScore: data.ratingScore,
+      ratingCount: data.ratingCount,
+      positiveCount: data.positiveCount,
+      negativeCount: data.negativeCount,
+      memberSince: data.memberSince,
+    };
   },
 };

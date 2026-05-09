@@ -40,6 +40,10 @@ import {
   resolveShpockSource,
 } from '@/shared/lib/platforms/shpock';
 import { customSourceContainsCode } from '@/shared/lib/platforms/custom';
+import {
+  reverbBioContainsCode,
+  extractReverbSlug,
+} from '@/shared/lib/platforms/reverb';
 import type { BioCodePlatform } from '@/features/connections/types/connection.schemas';
 import { encrypt, decrypt } from '@/shared/lib/crypto';
 import { generateBioCode } from '@/shared/lib/utils/bio-code';
@@ -92,6 +96,12 @@ export async function verifyBioCodeBySource(args: {
       const source = await resolveShpockSource(args.platformUrl);
       platformUserId = source.userId;
       result = await shpockSourceContainsCode(source, code);
+    } else if (args.platform === 'reverb') {
+      const slug = extractReverbSlug(args.platformUrl);
+      if (!slug) return { verified: false, reason: 'URL ungültig — erwarte reverb.com/shop/<slug>' };
+      const r = await reverbBioContainsCode(slug, code);
+      platformUserId = r.profile.platformUserId ?? slug;
+      result = { matched: r.matched, profile: r.profile };
     } else {
       // custom — generic URL fetch + code check, no rating extraction
       result = await customSourceContainsCode(args.platformUrl, code);
@@ -184,53 +194,7 @@ export async function refreshConnectionData(args: {
     return r;
   }
 
-  if (conn.method === 'token' && conn.signed_payload && conn.platform === 'reverb') {
-    return refreshReverbConnection(args.userId, conn.id, conn.signed_payload);
-  }
-
   return { ok: false, reason: 'cannot refresh this connection' };
-}
-
-async function refreshReverbConnection(
-  userId: string,
-  connectionId: string,
-  encryptedPayload: string,
-): Promise<{ ok: boolean; reason?: string }> {
-  const supabase = createSupabaseAdmin();
-
-  let stored: { access_token?: string };
-  try {
-    stored = JSON.parse(decrypt(encryptedPayload));
-  } catch {
-    return { ok: false, reason: 'token decrypt failed' };
-  }
-  if (!stored.access_token) return { ok: false, reason: 'no token stored' };
-
-  try {
-    const profile = await (
-      await import('@/shared/lib/platforms/reverb')
-    ).fetchReverbProfile(stored.access_token);
-    const now = new Date();
-    await supabase
-      .from('connections')
-      .update({
-        last_fetched: now.toISOString(),
-        rating_score: profile.ratingScore,
-        rating_count: profile.ratingCount,
-        positive_count: profile.positiveCount,
-        negative_count: profile.negativeCount,
-        member_since: profile.memberSince,
-        platform_url: profile.url,
-        platform_user_id: profile.platformUserId,
-        custom_label: profile.shopName,
-      })
-      .eq('id', connectionId)
-      .eq('user_id', userId);
-    void logActivity({ userId, kind: 'connection_refreshed', platform: 'reverb' });
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, reason: e instanceof Error ? e.message : 'refresh failed' };
-  }
 }
 
 async function refreshOAuthConnection(

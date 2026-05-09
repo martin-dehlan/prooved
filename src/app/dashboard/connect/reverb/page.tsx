@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ReverbTokenFlow } from '@/features/connections/components/ReverbTokenFlow';
+import { BioCodeFlow } from '@/features/connections';
 
 export default function ConnectReverbPage() {
   return (
@@ -15,11 +15,10 @@ export default function ConnectReverbPage() {
           Reverb verknüpfen
         </h1>
         <p className="text-sm text-muted">
-          Silver-Tier · Personal Access Token. Reverb hat keine offene
-          OAuth-App-Registrierung, deshalb nutzen wir einen privaten Token.
+          Silver-Tier · Bio-Code in Shop-Beschreibung. 30 Tage gültig.
         </p>
       </div>
-      <ReverbTokenFlow />
+      <BioCodeFlow platform="reverb" />
     </div>
   );
 }

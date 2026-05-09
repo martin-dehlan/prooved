@@ -6,6 +6,7 @@ export const BIOCODE_PLATFORMS = [
   'discogs',
   'willhaben',
   'shpock',
+  'reverb',
   'custom',
 ] as const;
 export type BioCodePlatform = (typeof BIOCODE_PLATFORMS)[number];

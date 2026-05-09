@@ -99,6 +99,17 @@ const CONFIG: Record<ScriptedPlatform, PlatformConfig> = {
       'URL der Anzeige kopieren (enthält /i/...)',
     ],
   },
+  reverb: {
+    label: 'Reverb',
+    placeholder: 'https://reverb.com/shop/dein-shop-slug',
+    bioField: 'Shop-Beschreibung',
+    prerequisite: 'Du brauchst einen Reverb-Shop (Verkäuferprofil).',
+    steps: [
+      'Auf [reverb.com](https://reverb.com) einloggen → [Shop Settings](https://reverb.com/my/shop/edit) öffnen',
+      '"About / Description" Feld bearbeiten, Code einfügen, speichern',
+      'Shop-URL kopieren (reverb.com/shop/DEIN-SLUG)',
+    ],
+  },
 };
 
 export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
