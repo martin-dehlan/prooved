@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createSupabaseServer } from '@/shared/lib/supabase/server';
 import { ThemeToggle } from '@/shared/components/ui/ThemeToggle';
 import { Logo } from '@/shared/components/ui/Logo';
+import { LegalFooter } from '@/shared/components/LegalFooter';
 import { SignOutButton } from './SignOutButton';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -31,6 +32,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </header>
       <main className="mx-auto max-w-2xl px-5 py-8">{children}</main>
+      <LegalFooter />
     </div>
   );
 }

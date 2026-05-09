@@ -219,6 +219,7 @@ export type Database = {
       }
       users: {
         Row: {
+          avatar_source: string | null
           created_at: string
           email: string
           id: string
@@ -230,6 +231,7 @@ export type Database = {
           wallet_verified_at: string | null
         }
         Insert: {
+          avatar_source?: string | null
           created_at?: string
           email: string
           id: string
@@ -241,6 +243,7 @@ export type Database = {
           wallet_verified_at?: string | null
         }
         Update: {
+          avatar_source?: string | null
           created_at?: string
           email?: string
           id?: string

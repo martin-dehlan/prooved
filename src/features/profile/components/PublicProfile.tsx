@@ -16,7 +16,19 @@ const SOURCE_LABEL: Record<string, string> = {
   github: 'GitHub',
 };
 
-function pickAvatar(connections: Connection[]): { url: string } | null {
+function pickAvatar(
+  connections: Connection[],
+  preference: string | null,
+): { url: string } | null {
+  if (preference === 'none') return null;
+  // If user picked a specific source, use only that — fall through to null.
+  if (preference === 'paypal' || preference === 'linkedin' || preference === 'github') {
+    const c = connections.find(
+      (x) => x.platform === preference && x.show_picture && x.verified_picture_url,
+    );
+    return c?.verified_picture_url ? { url: c.verified_picture_url } : null;
+  }
+  // Auto: priority order
   const order: Connection['platform'][] = ['paypal', 'linkedin', 'github'];
   for (const platform of order) {
     const c = connections.find(
@@ -68,7 +80,7 @@ export function PublicProfile({
       .join('') || user.slug[0]?.toUpperCase();
 
   const score = computeTrust({ connections });
-  const avatar = pickAvatar(connections);
+  const avatar = pickAvatar(connections, user.avatar_source);
   const verifiedName = pickVerifiedName(connections);
   const nameCheck = checkNameConsistency(connections);
   const proovedSince = formatMonthYear(user.created_at);
@@ -209,6 +221,23 @@ export function PublicProfile({
               className="hover:text-text hover:underline"
             >
               Was ist Prooved?
+            </Link>
+          </nav>
+          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-muted/80">
+            <Link href="/about" className="hover:text-text hover:underline">
+              Über
+            </Link>
+            <span aria-hidden>·</span>
+            <Link href="/privacy" className="hover:text-text hover:underline">
+              Datenschutz
+            </Link>
+            <span aria-hidden>·</span>
+            <Link href="/terms" className="hover:text-text hover:underline">
+              AGB
+            </Link>
+            <span aria-hidden>·</span>
+            <Link href="/imprint" className="hover:text-text hover:underline">
+              Impressum
             </Link>
           </nav>
           <span className="text-muted/60">Powered by Prooved</span>

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Button, Input } from '@/shared/components/ui';
 import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 import { TrustScoreCard } from './TrustScoreCard';
+import { AvatarSettings } from '@/features/profile/components/AvatarSettings';
 import { ActivityLog } from '@/features/activity/components/ActivityLog';
 import { useAuth } from '@/features/auth';
 import {
@@ -67,6 +68,19 @@ export function ConnectionList() {
       </section>
 
       {allConnections.length > 0 && <TrustScoreCard connections={allConnections} />}
+
+      <AvatarSettings
+        userId={appUser.id}
+        current={(appUser.avatar_source as 'paypal' | 'linkedin' | 'github' | 'none' | null) ?? null}
+        connections={allConnections}
+        initials={
+          (appUser.name ?? appUser.slug)
+            .split(/\s+/)
+            .slice(0, 2)
+            .map((s) => s[0]?.toUpperCase() ?? '')
+            .join('') || appUser.slug[0]?.toUpperCase() || '?'
+        }
+      />
 
       <section className="space-y-3">
         <header className="flex items-baseline justify-between">

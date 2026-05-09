@@ -2,9 +2,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ThemeToggle } from '@/shared/components/ui/ThemeToggle';
 import { Logo } from '@/shared/components/ui/Logo';
+import { LegalFooter } from '@/shared/components/LegalFooter';
 
 export function Hero() {
   return (
+    <>
     <section className="mx-auto flex min-h-screen max-w-md flex-col justify-between px-5 py-10">
       <header className="flex items-center justify-between">
         <Logo size={28} />
@@ -71,5 +73,7 @@ export function Hero() {
         </p>
       </footer>
     </section>
+    <LegalFooter />
+    </>
   );
 }
