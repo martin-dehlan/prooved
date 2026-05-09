@@ -149,25 +149,7 @@ export function PublicProfile({
           </div>
         </header>
 
-        <ScoreInline score={score} />
-
-        {warnings.length > 0 && (
-          <ul className="mt-3 space-y-1.5 text-xs">
-            {warnings.map((w, i) => (
-              <li
-                key={i}
-                className={`flex items-start gap-2 rounded-md px-3 py-2 ${
-                  w.kind === 'danger'
-                    ? 'bg-danger/10 text-danger'
-                    : 'bg-warning/10 text-warning'
-                }`}
-              >
-                <span aria-hidden>⚠</span>
-                <span>{w.text}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ScoreInline score={score} warnings={warnings} />
 
         {(score.totalRatings > 0 || score.aggregatePositivePct != null || activeSince) && (
           <div className="mt-5 grid grid-cols-3 gap-2 border-y border-elevated py-4 text-center">
@@ -285,26 +267,71 @@ const TIER_BAR: Record<Tier, string> = {
   diamond: 'bg-accent',
 };
 
-function ScoreInline({ score }: { score: ReturnType<typeof computeTrust> }) {
+function ScoreInline({
+  score,
+  warnings,
+}: {
+  score: ReturnType<typeof computeTrust>;
+  warnings: { kind: 'danger' | 'warning'; text: string }[];
+}) {
+  const hasDanger = warnings.some((w) => w.kind === 'danger');
+  const tone = hasDanger ? 'text-danger' : 'text-warning';
+  const accent = hasDanger ? 'border-danger/40' : 'border-warning/40';
+
   return (
-    <div className="mt-5 flex items-center gap-3">
-      <span
-        className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${TIER_BG[score.tier]} ${TIER_TEXT[score.tier]}`}
-      >
-        {score.tierLabel}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="h-1 overflow-hidden rounded-full bg-elevated">
-          <div
-            className={`h-full rounded-full transition-all ${TIER_BAR[score.tier]}`}
-            style={{ width: `${score.total}%` }}
-          />
+    <div className="mt-5 space-y-2">
+      <div className="flex items-center gap-3">
+        <span
+          className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${TIER_BG[score.tier]} ${TIER_TEXT[score.tier]}`}
+        >
+          {score.tierLabel}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="h-1 overflow-hidden rounded-full bg-elevated">
+            <div
+              className={`h-full rounded-full transition-all ${TIER_BAR[score.tier]}`}
+              style={{ width: `${score.total}%` }}
+            />
+          </div>
         </div>
+        <span className="shrink-0 tabular-nums text-sm font-semibold text-text">
+          {score.total}
+          <span className="text-muted">/100</span>
+        </span>
       </div>
-      <span className="shrink-0 tabular-nums text-sm font-semibold text-text">
-        {score.total}
-        <span className="text-muted">/100</span>
-      </span>
+
+      {warnings.length > 0 && (
+        <details className="group">
+          <summary
+            className={`flex cursor-pointer list-none items-center gap-1.5 text-[11px] ${tone} hover:opacity-80`}
+          >
+            <span aria-hidden className="text-[10px]">
+              ⚠
+            </span>
+            <span>
+              {warnings.length} {warnings.length === 1 ? 'Hinweis' : 'Hinweise'}
+            </span>
+            <span
+              aria-hidden
+              className="text-muted/60 transition-transform group-open:rotate-180"
+            >
+              ⌄
+            </span>
+          </summary>
+          <ul
+            className={`mt-1.5 space-y-1 border-l-2 ${accent} pl-3 text-[11px]`}
+          >
+            {warnings.map((w, i) => (
+              <li
+                key={i}
+                className={w.kind === 'danger' ? 'text-danger' : 'text-warning'}
+              >
+                {w.text}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }
