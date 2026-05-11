@@ -1,5 +1,6 @@
 import { createSupabaseAdmin } from '@/shared/lib/supabase/server';
-import type { ReportInput } from '@/features/report/types/report.schemas';
+import { notifyAdminOfReport } from '@/shared/lib/email/notify';
+import { REPORT_REASON_LABELS, type ReportInput } from '@/features/report/types/report.schemas';
 
 export async function submitReport(input: ReportInput & { reporterIp: string }): Promise<void> {
   const supabase = createSupabaseAdmin();
@@ -19,5 +20,11 @@ export async function submitReport(input: ReportInput & { reporterIp: string }):
   });
   if (error) throw error;
 
-  // TODO email admin via Resend / Supabase Edge Fn
+  void notifyAdminOfReport({
+    targetSlug: input.targetSlug,
+    reason: input.reason,
+    reasonLabel: REPORT_REASON_LABELS[input.reason],
+    evidence: input.evidence,
+    reporterIp: input.reporterIp,
+  });
 }

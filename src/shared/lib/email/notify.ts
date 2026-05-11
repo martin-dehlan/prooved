@@ -60,6 +60,35 @@ export async function notifyUserOfNewConnection(args: {
   }
 }
 
+export async function notifyAdminOfReport(args: {
+  targetSlug: string;
+  reason: string;
+  reasonLabel: string;
+  evidence?: string | null;
+  reporterIp: string;
+}): Promise<void> {
+  const admin = process.env.ADMIN_EMAIL;
+  if (!admin) return;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://prooved.xyz';
+  const profileUrl = `${appUrl}/${args.targetSlug}`;
+  await sendEmail({
+    to: admin,
+    subject: `[Prooved] Neue Meldung: ${args.targetSlug} (${args.reasonLabel})`,
+    text: [
+      `Neue Profil-Meldung eingegangen.`,
+      ``,
+      `Profil:    ${profileUrl}`,
+      `Grund:     ${args.reasonLabel} (${args.reason})`,
+      `Reporter:  ${args.reporterIp}`,
+      ``,
+      `Beweise / Beschreibung:`,
+      args.evidence?.trim() || '(keine)',
+      ``,
+      `Review in Supabase → table "reports" → reviewed=true wenn bearbeitet.`,
+    ].join('\n'),
+  });
+}
+
 export async function notifyConnectionAdded(args: {
   email: string;
   platform: string;
