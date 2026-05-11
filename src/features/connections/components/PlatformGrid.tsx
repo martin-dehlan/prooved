@@ -7,9 +7,13 @@ import {
 import type { Platform } from '@/shared/types/platform.types';
 import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 
+// Hidden:
+//  - etsy:     developer app rejected, no API access
+//  - willhaben: sign-up gated / parsing not verified, low DE relevance
+// Adapters + routes kept for any existing connections in the database.
 const PLATFORMS: Platform[] = [
-  'ebay', 'paypal', 'etsy', 'vinted', 'kleinanzeigen',
-  'willhaben', 'shpock', 'discogs', 'reverb',
+  'ebay', 'paypal', 'vinted', 'kleinanzeigen',
+  'shpock', 'discogs', 'reverb',
   'linkedin', 'github',
   'website', 'custom',
 ];

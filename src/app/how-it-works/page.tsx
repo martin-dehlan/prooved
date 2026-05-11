@@ -34,7 +34,7 @@ export default function HowItWorksPage() {
           <ul className="list-disc space-y-2 pl-5 text-text">
             <li>
               <strong>Eigentum</strong>: Nur du kannst deinen Account
-              verifizieren — entweder per OAuth-Login (eBay, PayPal, Etsy,
+              verifizieren — entweder per OAuth-Login (eBay, PayPal,
               GitHub, LinkedIn) oder per Bio-Code in deiner Profil-Beschreibung
               auf Plattformen ohne API (Vinted, Kleinanzeigen, Discogs, …).
             </li>
