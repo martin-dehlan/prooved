@@ -84,6 +84,13 @@ export default function PrivacyPage() {
               System-E-Mails.
             </li>
             <li>
+              <strong>PostHog</strong> (EU Cloud, Frankfurt) — Produkt-Analytik
+              und Session-Replay zur Verbesserung des Dienstes. Cookieless-Modus
+              (Persistenz nur im Arbeitsspeicher), keine Drittanbieter-Cookies.
+              Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes
+              Interesse an Produktverbesserung und Fehleranalyse).
+            </li>
+            <li>
               <strong>Drittplattform-APIs</strong> (eBay, PayPal, Vinted,
               Kleinanzeigen, Discogs): Übermittlung erfolgt nur auf deine
               Veranlassung im Rahmen der Verifizierung. Es gelten die
@@ -106,11 +113,17 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section n="5" title="Cookies">
+        <Section n="5" title="Cookies und ähnliche Technologien">
           <p>
             Wir verwenden technisch notwendige Cookies für die Authentifizierung
             (Supabase Session) und ein lokales Theme-Setting (Dark/Light).
             Tracking- oder Werbe-Cookies setzen wir nicht ein.
+          </p>
+          <p>
+            Unser Analyse-Dienst PostHog läuft im cookieless Modus
+            (Persistenz nur im Arbeitsspeicher der laufenden Browser-Session) und
+            setzt weder Cookies noch Local-Storage-Einträge. Es findet keine
+            Wiedererkennung über Sitzungsgrenzen hinweg statt.
           </p>
         </Section>
 

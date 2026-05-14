@@ -13,13 +13,16 @@ const SECURITY_HEADERS: [string, string][] = [
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      // Next + Tailwind inject inline styles + scripts in dev/prod hydration
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      // Next + Tailwind inject inline styles + scripts in dev/prod hydration.
+      // PostHog loads recorder.js from eu-assets.i.posthog.com (session replay).
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://eu-assets.i.posthog.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      // Supabase API + Solana RPC + platform endpoints
-      "connect-src 'self' https://*.supabase.co https://*.supabase.in https://api.ebay.com https://api.sandbox.ebay.com https://api-m.paypal.com https://api-m.sandbox.paypal.com https://openapi.etsy.com https://api.github.com https://api.linkedin.com https://api.devnet.solana.com https://api.mainnet-beta.solana.com",
+      // Supabase API + Solana RPC + platform endpoints + PostHog ingestion (eu cloud)
+      "connect-src 'self' https://*.supabase.co https://*.supabase.in https://api.ebay.com https://api.sandbox.ebay.com https://api-m.paypal.com https://api-m.sandbox.paypal.com https://openapi.etsy.com https://api.github.com https://api.linkedin.com https://api.devnet.solana.com https://api.mainnet-beta.solana.com https://eu.i.posthog.com https://eu-assets.i.posthog.com",
+      // PostHog session replay uses a Web Worker (blob:)
+      "worker-src 'self' blob:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

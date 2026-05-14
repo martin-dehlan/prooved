@@ -188,26 +188,16 @@ export function PublicProfile({
 
         <footer className="mt-12 flex flex-col items-center gap-4 text-xs text-muted">
           <CopyLinkButton slug={user.slug} />
-          <nav className="flex items-center gap-3">
+          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
             <Link
               href={`/${user.slug}/report`}
               className="hover:text-text hover:underline"
             >
               Profil melden
             </Link>
-            <span aria-hidden className="text-elevated">
-              ·
-            </span>
-            <Link
-              href="/how-it-works"
-              className="hover:text-text hover:underline"
-            >
+            <span aria-hidden>·</span>
+            <Link href="/how-it-works" className="hover:text-text hover:underline">
               Was ist Prooved?
-            </Link>
-          </nav>
-          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-muted/80">
-            <Link href="/about" className="hover:text-text hover:underline">
-              Über
             </Link>
             <span aria-hidden>·</span>
             <Link href="/privacy" className="hover:text-text hover:underline">

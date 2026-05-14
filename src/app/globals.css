@@ -2,26 +2,28 @@
 
 /* ----------------------------------------------------------------------
  * Design tokens
+ * Source vars live under --proov-* to avoid colliding with Tailwind v4
+ * defaults (which ship --color-bg, --color-surface, --color-muted, etc).
  * Dark theme = default on :root.
  * Light theme = html.light.
  * --------------------------------------------------------------------*/
 
 :root {
   /* Surfaces */
-  --color-bg:       #111111;
-  --color-surface:  #1A1F1E;
-  --color-elevated: #222927;
+  --proov-bg:       #111111;
+  --proov-surface:  #1A1F1E;
+  --proov-elevated: #222927;
 
   /* Text */
-  --color-text:     #F0F0F0;
-  --color-muted:    #7A8C8A;
+  --proov-text:     #F0F0F0;
+  --proov-muted:    #7A8C8A;
 
   /* Accent (same in both themes) */
-  --color-accent:   #5E9B8A;
+  --proov-accent:   #5E9B8A;
 
-  /* Semantic extensions for error/warning UI (pragmatic addition) */
-  --color-danger:   #DC2626;
-  --color-warning:  #F59E0B;
+  /* Semantic */
+  --proov-danger:   #DC2626;
+  --proov-warning:  #F59E0B;
 
   /* Radii */
   --radius-sm: 6px;
@@ -30,35 +32,31 @@
 }
 
 html.light {
-  --color-bg:       #F5F7F6;
-  --color-surface:  #FFFFFF;
-  --color-elevated: #E8EEEC;
-  --color-text:     #111111;
-  --color-muted:    #6B7C7A;
-  --color-accent:   #5E9B8A;
-  --color-danger:   #DC2626;
-  --color-warning:  #D97706;
+  --proov-bg:       #F5F7F6;
+  --proov-surface:  #FFFFFF;
+  --proov-elevated: #E8EEEC;
+  --proov-text:     #111111;
+  --proov-muted:    #6B7C7A;
+  --proov-accent:   #5E9B8A;
+  --proov-danger:   #DC2626;
+  --proov-warning:  #D97706;
 }
 
 /* ----------------------------------------------------------------------
- * Tailwind v4 token registration
- * Every CSS variable referenced here becomes available as a utility:
- *   bg-bg, bg-surface, bg-elevated, text-text, text-muted,
- *   bg-accent / text-accent / border-accent,
- *   bg-danger / text-danger,
- *   bg-warning / text-warning,
- *   rounded-sm/md/lg
+ * Tailwind v4 token registration.
+ * `inline` so utilities resolve `var()` at runtime (theme switch works).
+ * Token name → utility: --color-bg becomes bg-bg/text-bg, etc.
  * --------------------------------------------------------------------*/
 
 @theme inline {
-  --color-bg: var(--color-bg);
-  --color-surface: var(--color-surface);
-  --color-elevated: var(--color-elevated);
-  --color-text: var(--color-text);
-  --color-muted: var(--color-muted);
-  --color-accent: var(--color-accent);
-  --color-danger: var(--color-danger);
-  --color-warning: var(--color-warning);
+  --color-bg:       var(--proov-bg);
+  --color-surface:  var(--proov-surface);
+  --color-elevated: var(--proov-elevated);
+  --color-text:     var(--proov-text);
+  --color-muted:    var(--proov-muted);
+  --color-accent:   var(--proov-accent);
+  --color-danger:   var(--proov-danger);
+  --color-warning:  var(--proov-warning);
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -73,8 +71,8 @@ html.light {
  * --------------------------------------------------------------------*/
 
 html, body {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--proov-bg);
+  color: var(--proov-text);
 }
 
 body {
@@ -86,8 +84,8 @@ body {
 }
 
 ::selection {
-  background: var(--color-text);
-  color: var(--color-bg);
+  background: var(--proov-text);
+  color: var(--proov-bg);
 }
 
 /* Smooth theme transition */

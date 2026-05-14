@@ -164,16 +164,6 @@ export function ConnectionList() {
       </section>
 
       <ActivityLog />
-
-      <nav className="flex justify-center gap-3 text-xs text-muted">
-        <Link href="/how-it-works" className="hover:text-text hover:underline">
-          Wie funktioniert das?
-        </Link>
-        <span aria-hidden>·</span>
-        <Link href="/dashboard/privacy" className="hover:text-text hover:underline">
-          Datenschutz
-        </Link>
-      </nav>
     </div>
   );
 }
