@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Settings } from 'lucide-react';
 import { createSupabaseServer } from '@/shared/lib/supabase/server';
-import { ThemeToggle } from '@/shared/components/ui/ThemeToggle';
 import { Logo } from '@/shared/components/ui/Logo';
 import { LegalFooter } from '@/shared/components/LegalFooter';
-import { SignOutButton } from './SignOutButton';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createSupabaseServer();
@@ -25,10 +24,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <Link href="/dashboard" aria-label="Dashboard">
             <Logo size={28} />
           </Link>
-          <div className="flex items-center gap-1">
-            <ThemeToggle />
-            <SignOutButton />
-          </div>
+          <Link
+            href="/dashboard/settings"
+            aria-label="Einstellungen"
+            title="Einstellungen"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-text transition hover:bg-elevated"
+          >
+            <Settings size={18} aria-hidden />
+          </Link>
         </div>
       </header>
       <main className="mx-auto max-w-2xl px-5 py-8">{children}</main>

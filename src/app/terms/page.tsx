@@ -121,10 +121,10 @@ export default function TermsPage() {
           <p>
             Du kannst deinen Account jederzeit unter{' '}
             <Link
-              href="/dashboard/privacy"
+              href="/dashboard/settings"
               className="text-accent hover:underline"
             >
-              Datenkontrolle
+              Einstellungen
             </Link>{' '}
             löschen. Der Anbieter kann Accounts bei Verstößen gegen diese
             Bedingungen sperren oder löschen.

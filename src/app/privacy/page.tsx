@@ -149,14 +149,21 @@ export default function PrivacyPage() {
             .
           </p>
           <p>
-            Datenexport und Account-Löschung kannst du selbst jederzeit unter{' '}
+            Deinen Account kannst du jederzeit selbst unter{' '}
             <Link
-              href="/dashboard/privacy"
+              href="/dashboard/settings"
               className="text-accent hover:underline"
             >
-              Datenkontrolle
+              Einstellungen
             </Link>{' '}
-            durchführen.
+            löschen. Für Datenexport oder andere Anfragen schreib uns an{' '}
+            <a
+              href="mailto:support@prooved.xyz"
+              className="text-accent hover:underline"
+            >
+              support@prooved.xyz
+            </a>
+            .
           </p>
         </Section>
 

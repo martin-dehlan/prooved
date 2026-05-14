@@ -7,5 +7,5 @@ export async function POST() {
   if ('error' in auth) return auth.error;
 
   await disconnectWallet(auth.userId);
-  return NextResponse.redirect(new URL('/dashboard/privacy', process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'));
+  return NextResponse.redirect(new URL('/dashboard/settings', process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'));
 }
