@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation';
 import { HeaderMenu } from '@/shared/components/ui/HeaderMenu';
 import { Logo } from '@/shared/components/ui/Logo';
 import { LegalFooter } from '@/shared/components/LegalFooter';
+import { TrustSection } from './TrustSection';
 
 export async function Hero() {
   const t = await getTranslations('Hero');
@@ -65,6 +66,7 @@ export async function Hero() {
         </p>
       </footer>
     </section>
+    <TrustSection />
     <LegalFooter />
     </>
   );

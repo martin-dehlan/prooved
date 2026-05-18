@@ -45,6 +45,18 @@
     "step3": "Share your profile link — instead of screenshots",
     "disclaimer": "We don't create our own ratings. We only verify that an account belongs to you."
   },
+  "Trust": {
+    "openSource": "Open Source",
+    "readOnlyTitle": "We only read. Never write.",
+    "readOnlyText": "Read-only access to public ratings via official APIs. No posts, no purchases, no messages on your behalf.",
+    "notTitle": "What we don't do",
+    "notTracking": "No tracking, no analytics profiles",
+    "notAds": "No ads",
+    "notSelling": "No selling your data",
+    "notPasswords": "No platform passwords stored with us (OAuth only)",
+    "euHosted": "Hosted in the EU, GDPR-compliant",
+    "oneClickDelete": "Delete your account in one click, anytime"
+  },
   "LegalFooter": {
     "about": "About",
     "privacy": "Privacy",

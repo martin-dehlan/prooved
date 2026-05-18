@@ -45,6 +45,18 @@
     "step3": "Profil-Link teilen — statt Screenshots",
     "disclaimer": "Wir erstellen keine eigenen Bewertungen. Wir verifizieren nur, dass ein Account dir gehört."
   },
+  "Trust": {
+    "openSource": "Open Source",
+    "readOnlyTitle": "Wir lesen nur. Schreiben nie.",
+    "readOnlyText": "Lesezugriff auf öffentliche Bewertungen via offizielle APIs. Keine Posts, keine Käufe, keine Nachrichten in deinem Namen.",
+    "notTitle": "Was wir nicht machen",
+    "notTracking": "Kein Tracking, keine Analytics-Profile",
+    "notAds": "Keine Werbung",
+    "notSelling": "Kein Verkauf deiner Daten",
+    "notPasswords": "Keine Plattform-Passwörter bei uns (nur OAuth)",
+    "euHosted": "Gehostet in der EU, DSGVO-konform",
+    "oneClickDelete": "Account jederzeit in einem Klick löschbar"
+  },
   "LegalFooter": {
     "about": "Über",
     "privacy": "Datenschutz",
