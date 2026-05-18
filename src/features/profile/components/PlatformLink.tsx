@@ -1,7 +1,7 @@
 import { PLATFORM_LABELS, PLATFORM_TIER } from '@/shared/types/platform.types';
 import type { Connection } from '@/features/connections/types/connection.types';
 import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
-import { isSuspectMembership, formatActivity } from '@/shared/lib/profile-checks';
+import { isSuspectMembership, formatActivity, type Locale } from '@/shared/lib/profile-checks';
 
 const PLATFORM_TILE: Record<string, { bg: string; fg: string }> = {
   ebay:          { bg: 'bg-blue-600',   fg: 'text-white' },
@@ -40,21 +40,26 @@ function formatYear(d: string | null): string | null {
   return String(dt.getFullYear());
 }
 
-function metricFor(c: Connection): { primary: string; secondary?: string; tone?: 'good' | 'bad' | 'neutral' } | null {
+function metricFor(
+  c: Connection,
+  locale: Locale,
+): { primary: string; secondary?: string; tone?: 'good' | 'bad' | 'neutral' } | null {
+  const en = locale === 'en';
+  const verified = en ? 'verified' : 'verifiziert';
+  const ratings = en ? 'ratings' : 'Bewertungen';
+
   if (c.platform === 'custom' || c.platform === 'website') {
-    return {
-      primary: c.platform_user_id ?? 'verifiziert',
-      tone: 'good',
-    };
+    return { primary: c.platform_user_id ?? verified, tone: 'good' };
   }
   if (c.platform === 'github') {
     const handle = c.platform_user_id ? `@${c.platform_user_id}` : '';
     const repos = c.rating_count;
     const name = c.show_name && c.verified_name ? c.verified_name : null;
+    const repoLabel = en ? 'repos' : 'Repos';
     if (name) {
       return {
         primary: name,
-        secondary: [handle, repos != null && repos > 0 ? `${repos} Repos` : null]
+        secondary: [handle, repos != null && repos > 0 ? `${repos} ${repoLabel}` : null]
           .filter(Boolean)
           .join(' · '),
       };
@@ -62,16 +67,16 @@ function metricFor(c: Connection): { primary: string; secondary?: string; tone?:
     if (handle) {
       return {
         primary: handle,
-        secondary: repos != null && repos > 0 ? `${repos} Repos` : undefined,
+        secondary: repos != null && repos > 0 ? `${repos} ${repoLabel}` : undefined,
       };
     }
-    return { primary: 'verifiziert', tone: 'good' };
+    return { primary: verified, tone: 'good' };
   }
   if (c.platform === 'linkedin' || c.platform === 'paypal') {
     if (c.show_name && c.verified_name) {
       return { primary: c.verified_name, tone: 'good' };
     }
-    return { primary: 'Identität verifiziert', tone: 'good' };
+    return { primary: en ? 'Identity verified' : 'Identität verifiziert', tone: 'good' };
   }
   if (c.platform === 'ebay') {
     const pos = c.positive_count ?? 0;
@@ -79,36 +84,42 @@ function metricFor(c: Connection): { primary: string; secondary?: string; tone?:
     const total = pos + neg;
     if (total >= 1) {
       const pct = (pos / total) * 100;
-      const fmt = `${pct.toFixed(1).replace('.', ',')} % positiv`;
+      const fmt = en ? `${pct.toFixed(1)}% positive` : `${pct.toFixed(1).replace('.', ',')} % positiv`;
       const count = c.rating_count;
       const tone: 'good' | 'bad' | 'neutral' =
         pct >= 95 ? 'good' : pct < 80 ? 'bad' : 'neutral';
       return {
         primary: fmt,
-        secondary: count != null ? `${count} Bewertungen` : undefined,
+        secondary: count != null ? `${count} ${ratings}` : undefined,
         tone,
       };
     }
     if (c.rating_count && c.rating_count > 0) {
-      return { primary: `${c.rating_count} Bewertungen` };
+      return { primary: `${c.rating_count} ${ratings}` };
     }
-    return { primary: 'verifiziert', tone: 'good' };
+    return { primary: verified, tone: 'good' };
   }
   // vinted / kleinanzeigen / willhaben / shpock / discogs / etsy → stars
   const score = c.rating_score;
   if (score != null && score > 0) {
     return {
       primary: `★ ${score.toFixed(1)}`,
-      secondary: c.rating_count != null ? `${c.rating_count} Bewertungen` : undefined,
+      secondary: c.rating_count != null ? `${c.rating_count} ${ratings}` : undefined,
     };
   }
   if (c.rating_count && c.rating_count > 0) {
-    return { primary: `${c.rating_count} Bewertungen` };
+    return { primary: `${c.rating_count} ${ratings}` };
   }
-  return { primary: 'verifiziert', tone: 'good' };
+  return { primary: verified, tone: 'good' };
 }
 
-export function PlatformLink({ connection: c }: { connection: Connection }) {
+export function PlatformLink({
+  connection: c,
+  locale = 'de',
+}: {
+  connection: Connection;
+  locale?: Locale;
+}) {
   const tier = PLATFORM_TIER[c.platform];
   const label =
     c.platform === 'custom' && c.custom_label
@@ -117,9 +128,10 @@ export function PlatformLink({ connection: c }: { connection: Connection }) {
   const clickable = isClickable(c);
   const since = formatYear(c.member_since);
   const suspect = isSuspectMembership(c);
-  const activity = formatActivity(c.last_fetched);
-  const metric = metricFor(c);
+  const activity = formatActivity(c.last_fetched, locale);
+  const metric = metricFor(c, locale);
   const tile = PLATFORM_TILE[c.platform] ?? { bg: 'bg-elevated', fg: 'text-text' };
+  const sinceWord = locale === 'en' ? 'since' : 'seit';
 
   const primaryTone =
     metric?.tone === 'good'
@@ -158,7 +170,7 @@ export function PlatformLink({ connection: c }: { connection: Connection }) {
         <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted">
           {since && (
             <span className={suspect.flagged ? 'text-warning' : ''}>
-              seit {since}
+              {sinceWord} {since}
               {suspect.flagged && ' ⚠'}
             </span>
           )}

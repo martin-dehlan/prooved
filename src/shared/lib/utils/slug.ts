@@ -2,12 +2,14 @@ import { z } from 'zod';
 
 export const SLUG_REGEX = /^[a-z0-9](?:[a-z0-9-]{1,30}[a-z0-9])?$/;
 
+// Error messages here are translation keys (namespace `SlugSchema`).
+// Resolve via useTranslations('SlugSchema') in the consuming form.
 export const slugSchema = z
   .string()
-  .min(3, 'Mindestens 3 Zeichen')
-  .max(32, 'Maximal 32 Zeichen')
-  .regex(SLUG_REGEX, 'Nur a-z, 0-9 und Bindestrich. Kein Bindestrich am Anfang/Ende.')
-  .refine((s) => !RESERVED_SLUGS.has(s), 'Dieser Name ist reserviert');
+  .min(3, 'minError')
+  .max(32, 'maxError')
+  .regex(SLUG_REGEX, 'regexError')
+  .refine((s) => !RESERVED_SLUGS.has(s), 'reservedError');
 
 export const RESERVED_SLUGS = new Set([
   'admin', 'api', 'app', 'auth', 'dashboard', 'login', 'logout', 'register',
@@ -15,6 +17,7 @@ export const RESERVED_SLUGS = new Set([
   'reports', 'privacy', 'terms', 'about', 'help', 'support', 'contact',
   'settings', 'me', 'user', 'users', 'public', 'static', '_next', 'favicon',
   'robots', 'sitemap', 'prooved', 'wallet', 'export', 'embed', 'oauth',
+  'de', 'en',
 ]);
 
 export function suggestSlug(name: string): string {

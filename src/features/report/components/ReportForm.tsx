@@ -3,15 +3,16 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { Button, Card, CardContent, Input, Label } from '@/shared/components/ui';
 import {
   reportSchema,
   REPORT_REASONS,
-  REPORT_REASON_LABELS,
   type ReportInput,
 } from '@/features/report/types/report.schemas';
 
 export function ReportForm({ targetSlug }: { targetSlug: string }) {
+  const t = useTranslations('ReportForm');
   const {
     register,
     handleSubmit,
@@ -31,7 +32,7 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
       body: JSON.stringify(values),
     });
     if (!res.ok) {
-      setError(`Fehler: ${res.status}`);
+      setError(t('errorPrefix', { status: res.status }));
       return;
     }
     setDone(true);
@@ -41,9 +42,7 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
     return (
       <Card>
         <CardContent>
-          <p className="text-sm text-accent">
-            Danke. Deine Meldung wurde übermittelt und wird geprüft.
-          </p>
+          <p className="text-sm text-accent">{t('successText')}</p>
         </CardContent>
       </Card>
     );
@@ -55,7 +54,7 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
         <form onSubmit={onSubmit} className="space-y-4">
           <input type="hidden" {...register('targetSlug')} />
           <div className="space-y-2">
-            <Label htmlFor="reason">Grund</Label>
+            <Label htmlFor="reason">{t('reasonLabel')}</Label>
             <select
               id="reason"
               {...register('reason')}
@@ -63,7 +62,7 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
             >
               {REPORT_REASONS.map((r) => (
                 <option key={r} value={r}>
-                  {REPORT_REASON_LABELS[r]}
+                  {t(`reason.${r}` as 'reason.fake_account' | 'reason.fraud' | 'reason.wrong_identity' | 'reason.other')}
                 </option>
               ))}
             </select>
@@ -72,13 +71,13 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="evidence">Beschreibung / Beweise (optional)</Label>
+            <Label htmlFor="evidence">{t('evidenceLabel')}</Label>
             <textarea
               id="evidence"
               {...register('evidence')}
               rows={5}
               className="w-full rounded-md border border-elevated p-3 text-sm"
-              placeholder="Transaktionsnachweis, Screenshot-Link, etc."
+              placeholder={t('evidencePlaceholder')}
             />
             {errors.evidence && (
               <p className="text-xs text-danger">{errors.evidence.message}</p>
@@ -86,7 +85,7 @@ export function ReportForm({ targetSlug }: { targetSlug: string }) {
           </div>
           {error && <p className="text-xs text-danger">{error}</p>}
           <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? 'Sende…' : 'Melden'}
+            {isSubmitting ? t('submitting') : t('submit')}
           </Button>
         </form>
       </CardContent>

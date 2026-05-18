@@ -1,8 +1,9 @@
-import Link from 'next/link';
 import Image from 'next/image';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import type { PublicProfile as PublicProfileData } from '@/features/profile/services/profileService';
 import type { Connection } from '@/features/connections/types/connection.types';
-import { computeTrust, type Tier } from '@/shared/lib/trust';
+import { computeTrust, type Tier, type Locale } from '@/shared/lib/trust';
 import {
   checkNameConsistency,
   formatMonthYear,
@@ -21,14 +22,12 @@ function pickAvatar(
   preference: string | null,
 ): { url: string } | null {
   if (preference === 'none') return null;
-  // If user picked a specific source, use only that — fall through to null.
   if (preference === 'paypal' || preference === 'linkedin' || preference === 'github') {
     const c = connections.find(
       (x) => x.platform === preference && x.show_picture && x.verified_picture_url,
     );
     return c?.verified_picture_url ? { url: c.verified_picture_url } : null;
   }
-  // Auto: priority order
   const order: Connection['platform'][] = ['paypal', 'linkedin', 'github'];
   for (const platform of order) {
     const c = connections.find(
@@ -63,13 +62,15 @@ function oldestYear(connections: Connection[]): number | null {
   return oldest === Infinity ? null : new Date(oldest).getFullYear();
 }
 
-export function PublicProfile({
+export async function PublicProfile({
   data,
   isOwner = false,
 }: {
   data: PublicProfileData;
   isOwner?: boolean;
 }) {
+  const locale = (await getLocale()) as Locale;
+  const t = await getTranslations('PublicProfile');
   const { user, connections } = data;
   const display = user.name ?? user.slug;
   const initials =
@@ -79,30 +80,27 @@ export function PublicProfile({
       .map((s) => s[0]?.toUpperCase() ?? '')
       .join('') || user.slug[0]?.toUpperCase();
 
-  const score = computeTrust({ connections });
+  const score = computeTrust({ connections, locale });
   const avatar = pickAvatar(connections, user.avatar_source);
   const verifiedName = pickVerifiedName(connections);
   const nameCheck = checkNameConsistency(connections);
-  const proovedSince = formatMonthYear(user.created_at);
+  const proovedSince = formatMonthYear(user.created_at, locale);
   const activeSince = oldestYear(connections);
 
   const warnings: { kind: 'danger' | 'warning'; text: string }[] = [];
   if (score.qualityCapped) {
-    warnings.push({
-      kind: 'danger',
-      text: 'Bewertungs-Quote unter 70 % — Score auf Bronze begrenzt.',
-    });
+    warnings.push({ kind: 'danger', text: t('warningQualityCap') });
   }
   if (nameCheck.hasMismatch) {
     warnings.push({
       kind: 'warning',
-      text: `${nameCheck.names.length} verschiedene Klarnamen verknüpft.`,
+      text: t('warningNameMismatch', { count: nameCheck.names.length }),
     });
   }
 
   return (
     <div className="min-h-screen bg-bg">
-      {isOwner && <OwnerBar />}
+      {isOwner && <OwnerBar yourProfile={t('yourProfile')} dashboardLink={t('dashboardLink')} />}
 
       <div className="mx-auto max-w-md px-5 py-8 sm:py-12">
         <header className="flex items-center gap-4">
@@ -131,7 +129,7 @@ export function PublicProfile({
             <p className="truncate text-sm text-muted">
               @{user.slug}
               {proovedSince && (
-                <span className="text-muted/70"> · seit {proovedSince}</span>
+                <span className="text-muted/70"> · {t('since', { date: proovedSince })}</span>
               )}
             </p>
             {verifiedName && (
@@ -141,7 +139,7 @@ export function PublicProfile({
                   {verifiedName.name}
                   <span className="text-muted">
                     {' '}
-                    · {SOURCE_LABEL[verifiedName.source] ?? verifiedName.source}-verifiziert
+                    · {t('verifiedSuffix', { platform: SOURCE_LABEL[verifiedName.source] ?? verifiedName.source })}
                   </span>
                 </span>
               </p>
@@ -149,42 +147,47 @@ export function PublicProfile({
           </div>
         </header>
 
-        <ScoreInline score={score} warnings={warnings} />
+        <ScoreInline score={score} warnings={warnings} hintOne={t('hintOne')} hintMany={t('hintMany')} />
 
         {(score.totalRatings > 0 || score.aggregatePositivePct != null || activeSince) && (
           <div className="mt-5 grid grid-cols-3 gap-2 border-y border-elevated py-4 text-center">
-            <PercentMini pct={score.aggregatePositivePct} />
+            <PercentMini pct={score.aggregatePositivePct} label={t('positive')} locale={locale} />
             <Mini
               value={
                 score.totalRatings > 0
-                  ? score.totalRatings.toLocaleString('de-DE')
+                  ? score.totalRatings.toLocaleString(locale === 'en' ? 'en-US' : 'de-DE')
                   : '–'
               }
-              label="Bewertungen"
+              label={t('ratings')}
             />
             <Mini
               value={activeSince ? String(activeSince) : '–'}
-              label={activeSince ? 'aktiv seit' : 'aktiv'}
+              label={activeSince ? t('activeSince') : t('active')}
             />
           </div>
         )}
 
         <h2 className="mt-8 mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
-          Plattformen
+          {t('platformsHeading')}
         </h2>
         {connections.length === 0 ? (
           <p className="rounded-lg border border-dashed border-elevated bg-surface p-6 text-center text-sm text-muted">
-            Noch keine verifizierten Plattformen.
+            {t('noPlatforms')}
           </p>
         ) : (
           <ul className="space-y-2">
             {connections.map((c) => (
-              <PlatformLink key={c.id} connection={c} />
+              <PlatformLink key={c.id} connection={c} locale={locale} />
             ))}
           </ul>
         )}
 
-        <ScoreBreakdown score={score} />
+        <ScoreBreakdown
+          score={score}
+          title={t('scoreBreakdown')}
+          footer={t('scoreFooter')}
+          learnMore={t('learnMore')}
+        />
 
         <footer className="mt-12 flex flex-col items-center gap-4 text-xs text-muted">
           <CopyLinkButton slug={user.slug} />
@@ -193,42 +196,42 @@ export function PublicProfile({
               href={`/${user.slug}/report`}
               className="hover:text-text hover:underline"
             >
-              Profil melden
+              {t('report')}
             </Link>
             <span aria-hidden>·</span>
             <Link href="/how-it-works" className="hover:text-text hover:underline">
-              Was ist Prooved?
+              {t('whatIsProoved')}
             </Link>
             <span aria-hidden>·</span>
             <Link href="/privacy" className="hover:text-text hover:underline">
-              Datenschutz
+              {t('privacy')}
             </Link>
             <span aria-hidden>·</span>
             <Link href="/terms" className="hover:text-text hover:underline">
-              AGB
+              {t('terms')}
             </Link>
             <span aria-hidden>·</span>
             <Link href="/imprint" className="hover:text-text hover:underline">
-              Impressum
+              {t('imprint')}
             </Link>
           </nav>
-          <span className="text-muted/60">Powered by Prooved</span>
+          <span className="text-muted/60">{t('poweredBy')}</span>
         </footer>
       </div>
     </div>
   );
 }
 
-function OwnerBar() {
+function OwnerBar({ yourProfile, dashboardLink }: { yourProfile: string; dashboardLink: string }) {
   return (
     <div className="sticky top-0 z-10 border-b border-elevated bg-surface/90 backdrop-blur">
       <div className="mx-auto flex max-w-md items-center justify-between px-5 py-2 text-xs">
-        <span className="text-muted">Dein Profil</span>
+        <span className="text-muted">{yourProfile}</span>
         <Link
           href="/dashboard"
           className="font-medium text-accent hover:underline"
         >
-          Dashboard →
+          {dashboardLink}
         </Link>
       </div>
     </div>
@@ -260,9 +263,13 @@ const TIER_BAR: Record<Tier, string> = {
 function ScoreInline({
   score,
   warnings,
+  hintOne,
+  hintMany,
 }: {
   score: ReturnType<typeof computeTrust>;
   warnings: { kind: 'danger' | 'warning'; text: string }[];
+  hintOne: string;
+  hintMany: string;
 }) {
   const hasDanger = warnings.some((w) => w.kind === 'danger');
   const tone = hasDanger ? 'text-danger' : 'text-warning';
@@ -295,11 +302,9 @@ function ScoreInline({
           <summary
             className={`flex cursor-pointer list-none items-center gap-1.5 text-[11px] ${tone} hover:opacity-80`}
           >
-            <span aria-hidden className="text-[10px]">
-              ⚠
-            </span>
+            <span aria-hidden className="text-[10px]">⚠</span>
             <span>
-              {warnings.length} {warnings.length === 1 ? 'Hinweis' : 'Hinweise'}
+              {warnings.length} {warnings.length === 1 ? hintOne : hintMany}
             </span>
             <span
               aria-hidden
@@ -308,14 +313,9 @@ function ScoreInline({
               ⌄
             </span>
           </summary>
-          <ul
-            className={`mt-1.5 space-y-1 border-l-2 ${accent} pl-3 text-[11px]`}
-          >
+          <ul className={`mt-1.5 space-y-1 border-l-2 ${accent} pl-3 text-[11px]`}>
             {warnings.map((w, i) => (
-              <li
-                key={i}
-                className={w.kind === 'danger' ? 'text-danger' : 'text-warning'}
-              >
+              <li key={i} className={w.kind === 'danger' ? 'text-danger' : 'text-warning'}>
                 {w.text}
               </li>
             ))}
@@ -326,11 +326,21 @@ function ScoreInline({
   );
 }
 
-function ScoreBreakdown({ score }: { score: ReturnType<typeof computeTrust> }) {
+function ScoreBreakdown({
+  score,
+  title,
+  footer,
+  learnMore,
+}: {
+  score: ReturnType<typeof computeTrust>;
+  title: string;
+  footer: string;
+  learnMore: string;
+}) {
   return (
     <details className="group mt-6 text-sm">
       <summary className="flex cursor-pointer items-center justify-between rounded-md py-2 text-xs text-muted hover:text-text">
-        <span>Score-Breakdown</span>
+        <span>{title}</span>
         <span className="transition group-open:rotate-180" aria-hidden>
           ⌄
         </span>
@@ -368,9 +378,9 @@ function ScoreBreakdown({ score }: { score: ReturnType<typeof computeTrust> }) {
             </div>
           ))}
         <p className="border-t border-elevated pt-3 text-[11px] text-muted">
-          Berechnet aus deinen verifizierten Plattformen.{' '}
+          {footer}{' '}
           <Link href="/how-it-works" className="underline">
-            Mehr erfahren
+            {learnMore}
           </Link>
         </p>
       </div>
@@ -387,17 +397,26 @@ function Mini({ value, label }: { value: string; label: string }) {
   );
 }
 
-function PercentMini({ pct }: { pct: number | null }) {
-  if (pct == null) return <Mini value="–" label="positiv" />;
+function PercentMini({
+  pct,
+  label,
+  locale,
+}: {
+  pct: number | null;
+  label: string;
+  locale: Locale;
+}) {
+  if (pct == null) return <Mini value="–" label={label} />;
   let cls = 'text-text';
   if (pct < 50) cls = 'text-danger';
   else if (pct < 90) cls = 'text-warning';
   else if (pct >= 95) cls = 'text-accent';
-  const fmt = `${pct.toFixed(1).replace('.', ',')} %`;
+  const fmt =
+    locale === 'en' ? `${pct.toFixed(1)}%` : `${pct.toFixed(1).replace('.', ',')} %`;
   return (
     <div>
       <div className={`text-base font-semibold tabular-nums ${cls}`}>{fmt}</div>
-      <div className="text-[10px] uppercase tracking-wider text-muted">positiv</div>
+      <div className="text-[10px] uppercase tracking-wider text-muted">{label}</div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import {
   PLATFORM_LABELS,
   PLATFORM_TIER,
@@ -7,24 +8,12 @@ import {
 import type { Platform } from '@/shared/types/platform.types';
 import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 
-// Hidden:
-//  - etsy:     developer app rejected, no API access
-//  - willhaben: sign-up gated / parsing not verified, low DE relevance
-// Adapters + routes kept for any existing connections in the database.
 const PLATFORMS: Platform[] = [
   'ebay', 'paypal', 'vinted', 'kleinanzeigen',
   'shpock', 'discogs', 'reverb',
-  'linkedin', 'github',
+  'linkedin', 'facebook', 'github',
   'website', 'custom',
 ];
-
-const METHOD_LABEL = {
-  oauth: 'OAuth',
-  bio_code: 'Bio-Code',
-  scrape: 'Scan',
-  domain_dns: 'DNS',
-  token: 'API-Token',
-} as const;
 
 const PLATFORM_TILE: Record<Platform, { bg: string; fg: string }> = {
   ebay:          { bg: 'bg-blue-600',   fg: 'text-white' },
@@ -34,6 +23,7 @@ const PLATFORM_TILE: Record<Platform, { bg: string; fg: string }> = {
   etsy:          { bg: 'bg-orange-700', fg: 'text-white' },
   github:        { bg: 'bg-zinc-800',   fg: 'text-white' },
   linkedin:      { bg: 'bg-sky-600',    fg: 'text-white' },
+  facebook:      { bg: 'bg-[#1877F2]',  fg: 'text-white' },
   discogs:       { bg: 'bg-zinc-700',   fg: 'text-white' },
   willhaben:     { bg: 'bg-accent',     fg: 'text-white' },
   shpock:        { bg: 'bg-yellow-500', fg: 'text-text' },
@@ -49,11 +39,13 @@ const TIER_DOT: Record<string, string> = {
 };
 
 export function PlatformGrid() {
+  const t = useTranslations('PlatformGrid');
   return (
     <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {PLATFORMS.map((p) => {
         const tier = PLATFORM_TIER[p];
         const tile = PLATFORM_TILE[p];
+        const method = PLATFORM_METHOD[p];
         return (
           <li key={p}>
             <Link
@@ -76,7 +68,7 @@ export function PlatformGrid() {
                   />
                 </div>
                 <p className="text-[11px] text-muted">
-                  {METHOD_LABEL[PLATFORM_METHOD[p]]}
+                  {t(`method.${method}` as 'method.oauth' | 'method.bio_code' | 'method.scrape' | 'method.domain_dns' | 'method.token')}
                 </p>
               </div>
               <span

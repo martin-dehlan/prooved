@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const STORAGE_KEY = 'prooved-theme';
 
@@ -12,6 +13,7 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeToggle() {
+  const t = useTranslations('ThemeToggle');
   const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
@@ -33,8 +35,8 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label={theme === 'dark' ? 'Hell-Modus aktivieren' : 'Dunkel-Modus aktivieren'}
-      title={theme === 'dark' ? 'Hell-Modus' : 'Dunkel-Modus'}
+      aria-label={theme === 'dark' ? t('switchToLight') : t('switchToDark')}
+      title={theme === 'dark' ? t('labelLight') : t('labelDark')}
       className="inline-flex h-9 w-9 items-center justify-center rounded-md text-text transition hover:bg-elevated"
     >
       {theme === 'dark' ? (

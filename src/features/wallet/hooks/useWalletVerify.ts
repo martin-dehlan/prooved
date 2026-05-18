@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { useTranslations } from 'next-intl';
 import bs58 from 'bs58';
 
 export function useWalletVerify() {
+  const t = useTranslations('WalletConnect');
   const { publicKey, signMessage, connected } = useWallet();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -12,13 +14,13 @@ export function useWalletVerify() {
   async function verify(): Promise<{ ok: boolean }> {
     setError(null);
     if (!connected || !publicKey || !signMessage) {
-      setError('Wallet nicht verbunden');
+      setError(t('notConnected'));
       return { ok: false };
     }
     setBusy(true);
     try {
       const nonceRes = await fetch('/api/wallet/nonce');
-      if (!nonceRes.ok) throw new Error(`Nonce konnte nicht geladen werden: ${nonceRes.status}`);
+      if (!nonceRes.ok) throw new Error(t('nonceFailed', { status: nonceRes.status }));
       const { nonce } = (await nonceRes.json()) as { nonce: string };
 
       const sig = await signMessage(new TextEncoder().encode(nonce));
@@ -31,10 +33,10 @@ export function useWalletVerify() {
           nonce,
         }),
       });
-      if (!verifyRes.ok) throw new Error(`Verify fehlgeschlagen: ${verifyRes.status}`);
+      if (!verifyRes.ok) throw new Error(t('verifyFailed', { status: verifyRes.status }));
       return { ok: true };
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Fehler');
+      setError(e instanceof Error ? e.message : t('genericError'));
       return { ok: false };
     } finally {
       setBusy(false);

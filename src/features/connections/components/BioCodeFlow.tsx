@@ -2,13 +2,12 @@
 
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import { Button, Input, Label } from '@/shared/components/ui';
 import { getBioCode, verifyBioCode } from '@/features/connections/services/connectionService';
 import type { BioCodePlatform } from '@/features/connections/types/connection.schemas';
 
-// BioCodeFlow handles platforms with predefined help-text + URL pattern.
-// Custom uses its own CustomVerifyFlow with user-provided label.
 type ScriptedPlatform = Exclude<BioCodePlatform, 'custom'>;
 
 // Render `[label](url)` as <a>, plain text passes through.
@@ -36,85 +35,41 @@ function renderInline(text: string): React.ReactNode {
   return parts.length ? parts : text;
 }
 
-interface PlatformConfig {
-  label: string;
-  placeholder: string;
-  bioField: string;
-  prerequisite?: string;
-  steps: string[];
-}
-
-const CONFIG: Record<ScriptedPlatform, PlatformConfig> = {
-  vinted: {
-    label: 'Vinted',
-    placeholder: 'https://www.vinted.de/member/12345678-handle',
-    bioField: 'Über mich',
-    steps: [
-      'Auf [vinted.de](https://www.vinted.de) oben rechts auf dein Profil-Bild klicken',
-      'Profil aufrufen — Adresszeile-URL kopieren',
-    ],
-  },
-  kleinanzeigen: {
-    label: 'Kleinanzeigen',
-    placeholder: 'https://www.kleinanzeigen.de/s-anzeige/...',
-    bioField: 'Anzeigen-Titel oder Beschreibung',
-    prerequisite:
-      'Kleinanzeigen-Profile haben kein Bio-Feld. Du brauchst mindestens eine aktive Anzeige — den Code packst du in deren Titel oder Beschreibung.',
-    steps: [
-      'Auf [kleinanzeigen.de](https://www.kleinanzeigen.de) eingeloggt: oben "Meins" → [Meine Anzeigen](https://www.kleinanzeigen.de/m-meine-anzeigen.html)',
-      'Eine Anzeige öffnen (oder neue erstellen)',
-      'Code unten in Titel oder Beschreibung einfügen — Anzeige speichern',
-      'URL der Anzeige hier unten einfügen',
-    ],
-  },
-  discogs: {
-    label: 'Discogs',
-    placeholder: 'https://www.discogs.com/user/dein-username',
-    bioField: 'Profile-Beschreibung',
-    steps: [
-      'Auf [discogs.com](https://www.discogs.com) einloggen → [User Settings](https://www.discogs.com/settings/user) öffnen',
-      'Im Feld "Profile" Code einfügen + "Save settings"',
-      'URL deines Profils kopieren (discogs.com/user/DEINUSERNAME)',
-    ],
-  },
-  willhaben: {
-    label: 'Willhaben',
-    placeholder: 'https://www.willhaben.at/iad/seller-profile/...',
-    bioField: 'Verkäufer-Beschreibung',
-    steps: [
-      'Auf [willhaben.at](https://www.willhaben.at) einloggen → "Mein willhaben" → "Verkäuferprofil"',
-      'Beschreibung bearbeiten + Code einfügen + speichern',
-      'URL deines Verkäufer-Profils kopieren (enthält /seller-profile/)',
-    ],
-  },
-  shpock: {
-    label: 'Shpock',
-    placeholder: 'https://www.shpock.com/de-de/i/...',
-    bioField: 'Anzeigen-Titel oder Beschreibung',
-    prerequisite:
-      'Shpock-Profile haben kein Bio-Feld. Du brauchst mindestens eine aktive Anzeige — den Code packst du in deren Titel oder Beschreibung.',
-    steps: [
-      'Auf [shpock.com](https://www.shpock.com/de-de) einloggen → Plus-Button → Anzeige erstellen (oder bestehende öffnen)',
-      'Code in Titel oder Beschreibung einfügen, Anzeige veröffentlichen',
-      'URL der Anzeige kopieren (enthält /i/...)',
-    ],
-  },
-  reverb: {
-    label: 'Reverb',
-    placeholder: 'https://reverb.com/shop/dein-shop-slug',
-    bioField: 'Shop-Beschreibung',
-    prerequisite: 'Du brauchst einen Reverb-Shop (Verkäuferprofil).',
-    steps: [
-      'Auf [reverb.com](https://reverb.com) einloggen → [Shop Settings](https://reverb.com/my/shop/edit) öffnen',
-      '"About / Description" Feld bearbeiten, Code einfügen, speichern',
-      'Shop-URL kopieren (reverb.com/shop/DEIN-SLUG)',
-    ],
-  },
+const PLATFORM_LABEL: Record<ScriptedPlatform, string> = {
+  vinted: 'Vinted',
+  kleinanzeigen: 'Kleinanzeigen',
+  discogs: 'Discogs',
+  willhaben: 'Willhaben',
+  shpock: 'Shpock',
+  reverb: 'Reverb',
 };
+
+// Each platform has a known number of steps (zero-indexed). Some have a "prerequisite" note.
+const PLATFORM_STEPS: Record<ScriptedPlatform, number> = {
+  vinted: 2,
+  kleinanzeigen: 4,
+  discogs: 3,
+  willhaben: 3,
+  shpock: 3,
+  reverb: 3,
+};
+const PLATFORMS_WITH_PREREQ = new Set<ScriptedPlatform>(['kleinanzeigen', 'shpock', 'reverb']);
 
 export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
   const router = useRouter();
-  const cfg = CONFIG[platform];
+  const t = useTranslations('BioCodeFlow');
+  const tCfg = useTranslations('BioCodeFlowPlatforms');
+  const label = PLATFORM_LABEL[platform];
+  const placeholder = tCfg(`${platform}.placeholder` as `vinted.placeholder`);
+  const bioField = tCfg(`${platform}.bioField` as `vinted.bioField`);
+  const stepCount = PLATFORM_STEPS[platform];
+  const prerequisite = PLATFORMS_WITH_PREREQ.has(platform)
+    ? tCfg(`${platform}.prerequisite` as `kleinanzeigen.prerequisite`)
+    : null;
+  const steps = Array.from({ length: stepCount }, (_, i) =>
+    tCfg(`${platform}.step.${i}` as `vinted.step.0`),
+  );
+
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [url, setUrl] = useState('');
@@ -129,12 +84,12 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
         if (alive) setCode(r.code);
       })
       .catch((e) => {
-        if (alive) setError(e instanceof Error ? e.message : 'Code-Abruf fehlgeschlagen');
+        if (alive) setError(e instanceof Error ? e.message : t('codeFetchError'));
       });
     return () => {
       alive = false;
     };
-  }, [platform]);
+  }, [platform, t]);
 
   async function copyCode() {
     if (!code) return;
@@ -156,10 +111,10 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
         router.push('/dashboard');
         router.refresh();
       } else {
-        setError(res.reason ?? `Code in deinem ${cfg.bioField} noch nicht gefunden.`);
+        setError(res.reason ?? t('codeNotFound', { field: bioField }));
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Fehler');
+      setError(e instanceof Error ? e.message : t('genericError'));
     } finally {
       setBusy(false);
     }
@@ -169,12 +124,13 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
     <div className="space-y-4">
       <ol className="space-y-4">
         <li className="rounded-lg border border-elevated bg-surface p-4">
-          <p className="text-sm font-semibold text-text">
-            1. Kopier diesen Code
-          </p>
+          <p className="text-sm font-semibold text-text">{t('step1')}</p>
           <p className="mt-1 text-sm text-muted">
-            Pack ihn auf {cfg.label} in dein{' '}
-            <span className="font-medium text-text">{cfg.bioField}</span>.
+            {t.rich('step1Hint', {
+              platform: label,
+              field: bioField,
+              b: (c) => <span className="font-medium text-text">{c}</span>,
+            })}
           </p>
           <button
             type="button"
@@ -186,7 +142,7 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
               {code ?? '…'}
             </code>
             <span className="text-sm font-semibold text-text">
-              {copied ? '✓ kopiert' : 'kopieren'}
+              {copied ? t('copied') : t('copy')}
             </span>
           </button>
         </li>
@@ -194,26 +150,26 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
         <li className="rounded-lg border border-elevated bg-surface p-4">
           <div className="flex items-baseline justify-between">
             <p className="text-sm font-semibold text-text">
-              2. {cfg.label}-URL hier einfügen
+              {t('step2', { platform: label })}
             </p>
             <button
               type="button"
               onClick={() => setShowHelp((v) => !v)}
               className="text-xs font-medium text-muted underline-offset-4 hover:text-text hover:underline"
             >
-              {showHelp ? 'verbergen' : 'wo finde ich die?'}
+              {showHelp ? t('hideHelp') : t('whereLink')}
             </button>
           </div>
 
           {showHelp && (
             <div className="mt-3 space-y-2 rounded-xl bg-bg p-4 text-sm">
-              {cfg.prerequisite && (
+              {prerequisite && (
                 <p className="rounded-lg bg-warning/15 px-3 py-2 text-warning">
-                  Hinweis: {cfg.prerequisite}
+                  {t('hint', { text: prerequisite })}
                 </p>
               )}
               <ol className="space-y-1 text-text">
-                {cfg.steps.map((s, i) => (
+                {steps.map((s, i) => (
                   <li key={i} className="flex gap-2">
                     <span className="font-bold text-text">{i + 1}.</span>
                     <span>{renderInline(s)}</span>
@@ -225,12 +181,12 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
 
           <div className="mt-3 space-y-2">
             <Label htmlFor="url" className="sr-only">
-              {cfg.label}-URL
+              {t('urlSrLabel', { platform: label })}
             </Label>
             <Input
               id="url"
               type="url"
-              placeholder={cfg.placeholder}
+              placeholder={placeholder}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
@@ -240,7 +196,7 @@ export function BioCodeFlow({ platform }: { platform: ScriptedPlatform }) {
               block
               size="lg"
             >
-              {busy ? 'Prüfe…' : 'Verifizieren'}
+              {busy ? t('verifying') : t('verify')}
             </Button>
           </div>
         </li>

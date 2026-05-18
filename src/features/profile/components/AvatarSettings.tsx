@@ -3,25 +3,25 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import type { Connection } from '@/features/connections/types/connection.types';
 import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 
 type Source = 'paypal' | 'linkedin' | 'github' | 'none' | null;
 
-const SOURCE_LABEL: Record<NonNullable<Source>, string> = {
+const SOURCE_LABEL: Record<'paypal' | 'linkedin' | 'github', string> = {
   paypal: 'PayPal',
   linkedin: 'LinkedIn',
   github: 'GitHub',
-  none: 'Keins',
 };
 
-async function setSource(source: Source): Promise<{ ok: boolean }> {
+async function setSource(source: Source, errorText: string): Promise<{ ok: boolean }> {
   const res = await fetch('/api/profile/avatar-source', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ source }),
   });
-  if (!res.ok) throw new Error('Update fehlgeschlagen');
+  if (!res.ok) throw new Error(errorText);
   return res.json();
 }
 
@@ -36,16 +36,16 @@ export function AvatarSettings({
   connections: Connection[];
   initials: string;
 }) {
+  const t = useTranslations('AvatarSettings');
   const qc = useQueryClient();
   const [optimistic, setOptimistic] = useState<Source>(current);
   const mutation = useMutation({
-    mutationFn: setSource,
+    mutationFn: (source: Source) => setSource(source, t('updateFailed')),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['user', userId] });
     },
   });
 
-  // Discover available sources from existing connections with picture
   const available = (['paypal', 'linkedin', 'github'] as const).filter((p) =>
     connections.some(
       (c) => c.platform === p && c.verified_picture_url && c.show_picture,
@@ -68,7 +68,6 @@ export function AvatarSettings({
         )?.verified_picture_url ?? null
       );
     }
-    // Auto: pick first available
     for (const p of ['paypal', 'linkedin', 'github'] as const) {
       const c = connections.find(
         (x) => x.platform === p && x.show_picture && x.verified_picture_url,
@@ -79,17 +78,17 @@ export function AvatarSettings({
   })();
 
   if (available.length === 0 && current === null) {
-    return null; // Nothing to choose from yet
+    return null;
   }
 
   return (
     <section className="space-y-3">
       <header className="flex items-baseline justify-between">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-          Profilbild
+          {t('title')}
         </h2>
         {mutation.isPending && (
-          <span className="text-[11px] text-muted">speichert…</span>
+          <span className="text-[11px] text-muted">{t('saving')}</span>
         )}
       </header>
 
@@ -97,7 +96,7 @@ export function AvatarSettings({
         {previewUrl ? (
           <Image
             src={previewUrl}
-            alt="Vorschau"
+            alt={t('preview')}
             width={56}
             height={56}
             className="h-14 w-14 rounded-full object-cover"
@@ -115,7 +114,7 @@ export function AvatarSettings({
 
         <div className="flex flex-wrap gap-1.5">
           <Choice
-            label="Auto"
+            label={t('auto')}
             active={isAuto}
             onClick={() => choose(null)}
             disabled={mutation.isPending}
@@ -131,7 +130,7 @@ export function AvatarSettings({
             />
           ))}
           <Choice
-            label="Initialen"
+            label={t('initials')}
             active={isNone}
             onClick={() => choose('none')}
             disabled={mutation.isPending}
@@ -140,9 +139,7 @@ export function AvatarSettings({
       </div>
 
       {available.length === 0 && !isNone && (
-        <p className="text-[11px] text-muted">
-          Verknüpfe PayPal, LinkedIn oder GitHub um deren Profilbild nutzen zu können.
-        </p>
+        <p className="text-[11px] text-muted">{t('noSources')}</p>
       )}
     </section>
   );

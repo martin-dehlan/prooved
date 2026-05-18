@@ -1,16 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui';
 
 export function ExportButton() {
+  const t = useTranslations('ExportButton');
   const [busy, setBusy] = useState(false);
 
   async function downloadExport() {
     setBusy(true);
     try {
       const res = await fetch('/api/export/signed');
-      if (!res.ok) throw new Error(`Export fehlgeschlagen: ${res.status}`);
+      if (!res.ok) throw new Error(t('error', { status: res.status }));
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -19,7 +21,7 @@ export function ExportButton() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Fehler');
+      alert(e instanceof Error ? e.message : t('unknownError'));
     } finally {
       setBusy(false);
     }
@@ -27,7 +29,7 @@ export function ExportButton() {
 
   return (
     <Button onClick={downloadExport} disabled={busy} variant="outline">
-      {busy ? 'Erstelle…' : 'Daten exportieren als JSON'}
+      {busy ? t('busy') : t('label')}
     </Button>
   );
 }

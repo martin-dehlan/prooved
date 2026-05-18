@@ -1,9 +1,20 @@
 import { supabase } from '@/shared/lib/supabase/client';
+import { routing } from '@/i18n/routing';
 import type { AppUser } from '@/features/auth/types/auth.types';
 
-export async function sendMagicLink(email: string, redirectTo?: string) {
+function withLocale(path: string, locale: string): string {
+  const safe = path.startsWith('/') ? path : `/${path}`;
+  const firstSeg = safe.split('/')[1];
+  if (firstSeg && (routing.locales as readonly string[]).includes(firstSeg)) return safe;
+  return `/${locale}${safe}`;
+}
+
+export async function sendMagicLink(email: string, redirectTo?: string, locale?: string) {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const next = redirectTo ?? '/dashboard';
+  const loc = locale && (routing.locales as readonly string[]).includes(locale)
+    ? locale
+    : routing.defaultLocale;
+  const next = withLocale(redirectTo ?? '/dashboard', loc);
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {

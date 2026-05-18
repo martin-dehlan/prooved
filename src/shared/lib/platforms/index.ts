@@ -7,6 +7,7 @@ import { websiteAdapter } from './website';
 import { etsyAdapter } from './etsy';
 import { githubAdapter } from './github';
 import { linkedinAdapter } from './linkedin';
+import { facebookAdapter } from './facebook';
 import { discogsAdapter } from './discogs';
 import { willhabenAdapter } from './willhaben';
 import { shpockAdapter } from './shpock';
@@ -22,6 +23,7 @@ export const ADAPTERS: Record<Platform, PlatformAdapter> = {
   etsy: etsyAdapter,
   github: githubAdapter,
   linkedin: linkedinAdapter,
+  facebook: facebookAdapter,
   discogs: discogsAdapter,
   willhaben: willhabenAdapter,
   shpock: shpockAdapter,
@@ -38,6 +40,7 @@ export {
   etsyAdapter,
   githubAdapter,
   linkedinAdapter,
+  facebookAdapter,
   discogsAdapter,
   willhabenAdapter,
   shpockAdapter,

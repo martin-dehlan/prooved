@@ -10,6 +10,7 @@
 import type { Connection } from '@/features/connections/types/connection.types';
 
 export type Tier = 'neu' | 'bronze' | 'silver' | 'gold' | 'diamond';
+export type Locale = 'de' | 'en';
 
 export interface ScoreComponent {
   id: 'identity' | 'marketplace' | 'volume' | 'longevity' | 'activity' | 'penalty';
@@ -34,19 +35,21 @@ export interface TrustScore {
   qualityCapped: boolean;
 }
 
-const TIER_THRESHOLDS: { min: number; tier: Tier; label: string }[] = [
-  { min: 90, tier: 'diamond', label: 'Diamond' },
-  { min: 70, tier: 'gold', label: 'Gold' },
-  { min: 50, tier: 'silver', label: 'Silver' },
-  { min: 30, tier: 'bronze', label: 'Bronze' },
-  { min: 0, tier: 'neu', label: 'Neu' },
+const TIER_THRESHOLDS: { min: number; tier: Tier; labelDe: string; labelEn: string }[] = [
+  { min: 90, tier: 'diamond', labelDe: 'Diamond', labelEn: 'Diamond' },
+  { min: 70, tier: 'gold', labelDe: 'Gold', labelEn: 'Gold' },
+  { min: 50, tier: 'silver', labelDe: 'Silver', labelEn: 'Silver' },
+  { min: 30, tier: 'bronze', labelDe: 'Bronze', labelEn: 'Bronze' },
+  { min: 0, tier: 'neu', labelDe: 'Neu', labelEn: 'New' },
 ];
 
-function tierFor(total: number): { tier: Tier; tierLabel: string } {
+function tierFor(total: number, locale: Locale): { tier: Tier; tierLabel: string } {
   for (const t of TIER_THRESHOLDS) {
-    if (total >= t.min) return { tier: t.tier, tierLabel: t.label };
+    if (total >= t.min) {
+      return { tier: t.tier, tierLabel: locale === 'en' ? t.labelEn : t.labelDe };
+    }
   }
-  return { tier: 'neu', tierLabel: 'Neu' };
+  return { tier: 'neu', tierLabel: locale === 'en' ? 'New' : 'Neu' };
 }
 
 const KYC_PLATFORMS = ['paypal', 'linkedin'] as const;
@@ -82,32 +85,50 @@ function nameFor(c: Connection): string {
   return PLATFORM_DISPLAY[c.platform] ?? c.platform;
 }
 
+function formatPercent(pct: number, locale: Locale): string {
+  return locale === 'en'
+    ? `${pct.toFixed(1)}%`
+    : `${pct.toFixed(1).replace('.', ',')} %`;
+}
+
+function formatNumber(n: number, locale: Locale): string {
+  return n.toLocaleString(locale === 'en' ? 'en-US' : 'de-DE');
+}
+
+// User-facing labels for ScoreComponent.label (also available via TrustScoreCard i18n).
+const LABELS: Record<ScoreComponent['id'], { de: string; en: string }> = {
+  identity: { de: 'Identität', en: 'Identity' },
+  marketplace: { de: 'Marktplatz-Reputation', en: 'Marketplace reputation' },
+  volume: { de: 'Bewertungs-Volumen', en: 'Rating volume' },
+  longevity: { de: 'Langlebigkeit', en: 'Longevity' },
+  activity: { de: 'Aktivität', en: 'Activity' },
+  penalty: { de: 'Penalty', en: 'Penalty' },
+};
+
+function L(id: ScoreComponent['id'], locale: Locale): string {
+  return LABELS[id][locale];
+}
+
 interface ScoreInput {
   connections: Connection[];
   reportCount?: number;
+  locale?: Locale;
 }
 
-export function computeTrust({ connections, reportCount = 0 }: ScoreInput): TrustScore {
+export function computeTrust({
+  connections,
+  reportCount = 0,
+  locale = 'de',
+}: ScoreInput): TrustScore {
   const visible = connections.filter((c) => !c.hidden && c.verified_at);
   const allConnections = connections.filter((c) => c.verified_at);
 
-  // -------- Identity (max 30)
-  const identity = computeIdentity(visible);
-
-  // -------- Marketplace (max 40)
-  const marketplace = computeMarketplace(visible);
-
-  // -------- Volume (max 15) — log-scaled total ratings
-  const volume = computeVolume(visible);
-
-  // -------- Longevity (max 10) — oldest verified member-since
-  const longevity = computeLongevity(visible);
-
-  // -------- Activity (max 5) — all visible connections fresh
-  const activity = computeActivity(visible);
-
-  // -------- Penalty (negative)
-  const penalty = computePenalty(allConnections, visible.length, reportCount);
+  const identity = computeIdentity(visible, locale);
+  const marketplace = computeMarketplace(visible, locale);
+  const volume = computeVolume(visible, locale);
+  const longevity = computeLongevity(visible, locale);
+  const activity = computeActivity(visible, locale);
+  const penalty = computePenalty(allConnections, visible.length, reportCount, locale);
 
   const totalEarned =
     identity.earned +
@@ -117,7 +138,6 @@ export function computeTrust({ connections, reportCount = 0 }: ScoreInput): Trus
     activity.earned +
     penalty.earned;
 
-  // Aggregate quality stats — used for tier cap + UI display
   const realMp = visible.filter(
     (c) =>
       MARKETPLACE_PLATFORMS.includes(c.platform as (typeof MARKETPLACE_PLATFORMS)[number]) &&
@@ -131,19 +151,17 @@ export function computeTrust({ connections, reportCount = 0 }: ScoreInput): Trus
 
   let total = Math.max(0, Math.min(100, Math.round(totalEarned)));
   let qualityCapped = false;
-  let tierInfo = tierFor(total);
+  let tierInfo = tierFor(total, locale);
 
-  // Tier-cap: if quality is awful (< 70 % positive across ≥10 ratings), cap at Bronze
-  // regardless of how many platforms are connected. Stops gaming via volume.
   if (aggregatePositivePct != null && aggregatePositivePct < 70) {
     if (total > 49) {
-      total = 49; // upper edge of Bronze
+      total = 49;
       qualityCapped = true;
     }
-    tierInfo = tierFor(total);
+    tierInfo = tierFor(total, locale);
   }
 
-  const suggestions = buildSuggestions({ visible, identity, marketplace, longevity });
+  const suggestions = buildSuggestions({ visible, identity, marketplace, longevity }, locale);
 
   return {
     total,
@@ -157,130 +175,159 @@ export function computeTrust({ connections, reportCount = 0 }: ScoreInput): Trus
   };
 }
 
-// -- Identity -----------------------------------------------------------
-
-function computeIdentity(visible: Connection[]): ScoreComponent {
+function computeIdentity(visible: Connection[], locale: Locale): ScoreComponent {
   const detail: string[] = [];
   let earned = 0;
 
   const kyc = visible.find((c) => KYC_PLATFORMS.includes(c.platform as 'paypal' | 'linkedin'));
   if (kyc) {
     earned += 20;
+    const platformLabel = kyc.platform === 'paypal' ? 'PayPal' : 'LinkedIn';
     detail.push(
-      `+20 KYC-Verifikation (${kyc.platform === 'paypal' ? 'PayPal' : 'LinkedIn'})`,
+      locale === 'en'
+        ? `+20 KYC verification (${platformLabel})`
+        : `+20 KYC-Verifikation (${platformLabel})`,
     );
     if (kyc.verified_name && kyc.show_name) {
       earned += 5;
-      detail.push('+5 Klarname öffentlich');
+      detail.push(locale === 'en' ? '+5 Real name public' : '+5 Klarname öffentlich');
     }
     if (kyc.verified_picture_url && kyc.show_picture) {
       earned += 5;
-      detail.push('+5 Profilbild verifiziert');
+      detail.push(locale === 'en' ? '+5 Profile picture verified' : '+5 Profilbild verifiziert');
     }
   } else {
-    detail.push('Keine KYC-Plattform verbunden (PayPal / LinkedIn)');
+    detail.push(
+      locale === 'en'
+        ? 'No KYC platform connected (PayPal / LinkedIn)'
+        : 'Keine KYC-Plattform verbunden (PayPal / LinkedIn)',
+    );
   }
 
-  return { id: 'identity', label: 'Identität', earned, max: 30, detail };
+  return { id: 'identity', label: L('identity', locale), earned, max: 30, detail };
 }
 
-// -- Marketplace --------------------------------------------------------
-
-function computeMarketplace(visible: Connection[]): ScoreComponent {
+function computeMarketplace(visible: Connection[], locale: Locale): ScoreComponent {
   const detail: string[] = [];
   let earned = 0;
 
   const marketplaces = visible.filter((c) =>
     MARKETPLACE_PLATFORMS.includes(c.platform as (typeof MARKETPLACE_PLATFORMS)[number]),
   );
-
-  // PayPal counts as identity not marketplace for scoring purposes
   const realMarketplaces = marketplaces.filter((c) => c.platform !== 'paypal');
   const platformNames = realMarketplaces.map(nameFor).join(' · ');
 
-  // Base score by count
   let base = 0;
   if (realMarketplaces.length >= 4) {
     base = 30;
-    detail.push(`+30 ${realMarketplaces.length} Marktplätze: ${platformNames}`);
+    detail.push(
+      locale === 'en'
+        ? `+30 ${realMarketplaces.length} marketplaces: ${platformNames}`
+        : `+30 ${realMarketplaces.length} Marktplätze: ${platformNames}`,
+    );
   } else if (realMarketplaces.length >= 2) {
     base = 20;
-    detail.push(`+20 ${realMarketplaces.length} Marktplätze: ${platformNames}`);
+    detail.push(
+      locale === 'en'
+        ? `+20 ${realMarketplaces.length} marketplaces: ${platformNames}`
+        : `+20 ${realMarketplaces.length} Marktplätze: ${platformNames}`,
+    );
   } else if (realMarketplaces.length === 1) {
     base = 10;
-    detail.push(`+10 1 Marktplatz: ${platformNames}`);
+    detail.push(
+      locale === 'en'
+        ? `+10 1 marketplace: ${platformNames}`
+        : `+10 1 Marktplatz: ${platformNames}`,
+    );
   } else {
-    detail.push('Keine Marktplatz-Verifikation');
+    detail.push(
+      locale === 'en' ? 'No marketplace verification' : 'Keine Marktplatz-Verifikation',
+    );
   }
-
   earned = base;
 
-  // Quality factor — applies to OVERALL marketplace count, not just eBay.
-  // We aggregate positive/negative across ALL marketplaces with feedback data.
   const totalPos = realMarketplaces.reduce((s, c) => s + (c.positive_count ?? 0), 0);
   const totalNeg = realMarketplaces.reduce((s, c) => s + (c.negative_count ?? 0), 0);
   const totalRated = totalPos + totalNeg;
 
   if (totalRated >= 10) {
     const pct = (totalPos / totalRated) * 100;
-    const pctFmt = pct.toFixed(1).replace('.', ',');
+    const pctFmt = formatPercent(pct, locale);
+    const positive = locale === 'en' ? 'positive' : 'positiv';
+    const ratingsLabel = locale === 'en' ? 'ratings' : 'Bewertungen';
     if (pct >= 95) {
       earned += 10;
-      detail.push(`+10 Quote: ${pctFmt} % positiv (${totalRated} Bewertungen)`);
+      detail.push(
+        locale === 'en'
+          ? `+10 Rate: ${pctFmt} ${positive} (${totalRated} ${ratingsLabel})`
+          : `+10 Quote: ${pctFmt} ${positive} (${totalRated} ${ratingsLabel})`,
+      );
     } else if (pct >= 90) {
       earned += 5;
-      detail.push(`+5 Quote: ${pctFmt} % positiv (${totalRated} Bewertungen)`);
+      detail.push(
+        locale === 'en'
+          ? `+5 Rate: ${pctFmt} ${positive} (${totalRated} ${ratingsLabel})`
+          : `+5 Quote: ${pctFmt} ${positive} (${totalRated} ${ratingsLabel})`,
+      );
     } else if (pct >= 80) {
-      // 80-89 %: neutral, no bonus, no penalty
-      detail.push(`+0 Quote: ${pctFmt} % positiv — kein Bonus, keine Strafe`);
+      detail.push(
+        locale === 'en'
+          ? `+0 Rate: ${pctFmt} ${positive} — no bonus, no penalty`
+          : `+0 Quote: ${pctFmt} ${positive} — kein Bonus, keine Strafe`,
+      );
     } else if (pct >= 50) {
-      const penalty = Math.min(20, base);
-      earned -= penalty;
-      detail.push(`-${penalty} Strafe: nur ${pctFmt} % positiv (<80 %)`);
+      const pen = Math.min(20, base);
+      earned -= pen;
+      detail.push(
+        locale === 'en'
+          ? `-${pen} Penalty: only ${pctFmt} ${positive} (<80%)`
+          : `-${pen} Strafe: nur ${pctFmt} ${positive} (<80 %)`,
+      );
     } else {
-      // < 50 % positive — neutralize the marketplace component entirely
       earned = 0;
-      detail.push(`-${base} schwere Strafe: ${pctFmt} % positiv (<50 %) — Marktplatz-Reputation nicht vertrauenswürdig`);
+      detail.push(
+        locale === 'en'
+          ? `-${base} Heavy penalty: ${pctFmt} ${positive} (<50%) — marketplace reputation not trustworthy`
+          : `-${base} schwere Strafe: ${pctFmt} ${positive} (<50 %) — Marktplatz-Reputation nicht vertrauenswürdig`,
+      );
     }
   }
 
-  return { id: 'marketplace', label: 'Marktplatz-Reputation', earned, max: 40, detail };
+  return { id: 'marketplace', label: L('marketplace', locale), earned, max: 40, detail };
 }
 
-// -- Volume -------------------------------------------------------------
-
-function computeVolume(visible: Connection[]): ScoreComponent {
+function computeVolume(visible: Connection[], locale: Locale): ScoreComponent {
   const total = visible.reduce((sum, c) => sum + (c.rating_count ?? 0), 0);
   const detail: string[] = [];
   let earned = 0;
+  const ratingsLabel = locale === 'en' ? 'ratings' : 'Bewertungen';
 
   if (total >= 100) {
     earned = 15;
-    detail.push(`+15 ${total.toLocaleString('de-DE')} Bewertungen`);
+    detail.push(`+15 ${formatNumber(total, locale)} ${ratingsLabel}`);
   } else if (total >= 10) {
     earned = 10;
-    detail.push(`+10 ${total} Bewertungen`);
+    detail.push(`+10 ${total} ${ratingsLabel}`);
   } else if (total >= 1) {
     earned = 5;
-    detail.push(`+5 ${total} Bewertungen`);
+    detail.push(`+5 ${total} ${ratingsLabel}`);
   } else {
-    detail.push('Noch keine Bewertungen');
+    detail.push(locale === 'en' ? 'No ratings yet' : 'Noch keine Bewertungen');
   }
 
-  // Per-platform attribution
   const breakdown = visible
     .filter((c) => (c.rating_count ?? 0) > 0)
     .map((c) => `${nameFor(c)}: ${c.rating_count}`);
   if (breakdown.length > 0) {
-    detail.push(`Aufteilung: ${breakdown.join(' · ')}`);
+    detail.push(
+      (locale === 'en' ? 'Breakdown: ' : 'Aufteilung: ') + breakdown.join(' · '),
+    );
   }
 
-  return { id: 'volume', label: 'Bewertungs-Volumen', earned, max: 15, detail };
+  return { id: 'volume', label: L('volume', locale), earned, max: 15, detail };
 }
 
-// -- Longevity ----------------------------------------------------------
-
-function computeLongevity(visible: Connection[]): ScoreComponent {
+function computeLongevity(visible: Connection[], locale: Locale): ScoreComponent {
   const detail: string[] = [];
   let earned = 0;
   let oldestMs = Infinity;
@@ -292,37 +339,42 @@ function computeLongevity(visible: Connection[]): ScoreComponent {
   }
 
   if (oldestMs === Infinity) {
-    detail.push('Keine Mitgliedschafts-Daten verfügbar');
-    return { id: 'longevity', label: 'Langlebigkeit', earned, max: 10, detail };
+    detail.push(
+      locale === 'en' ? 'No membership data available' : 'Keine Mitgliedschafts-Daten verfügbar',
+    );
+    return { id: 'longevity', label: L('longevity', locale), earned, max: 10, detail };
   }
 
   const ageYears = (Date.now() - oldestMs) / (1000 * 60 * 60 * 24 * 365);
   const oldestYear = new Date(oldestMs).getFullYear();
+  const activeSince = locale === 'en' ? 'active since' : 'aktiv seit';
 
   if (ageYears >= 5) {
     earned = 10;
-    detail.push(`+10 aktiv seit ${oldestYear}`);
+    detail.push(`+10 ${activeSince} ${oldestYear}`);
   } else if (ageYears >= 2) {
     earned = 5;
-    detail.push(`+5 aktiv seit ${oldestYear}`);
+    detail.push(`+5 ${activeSince} ${oldestYear}`);
   } else if (ageYears >= 1) {
     earned = 2;
-    detail.push(`+2 aktiv seit ${oldestYear}`);
+    detail.push(`+2 ${activeSince} ${oldestYear}`);
   } else {
-    detail.push(`Account seit ${oldestYear} (< 1 Jahr)`);
+    detail.push(
+      locale === 'en'
+        ? `Account since ${oldestYear} (< 1 year)`
+        : `Account seit ${oldestYear} (< 1 Jahr)`,
+    );
   }
 
-  return { id: 'longevity', label: 'Langlebigkeit', earned, max: 10, detail };
+  return { id: 'longevity', label: L('longevity', locale), earned, max: 10, detail };
 }
 
-// -- Activity -----------------------------------------------------------
-
-function computeActivity(visible: Connection[]): ScoreComponent {
+function computeActivity(visible: Connection[], locale: Locale): ScoreComponent {
   const detail: string[] = [];
   let earned = 0;
   if (visible.length === 0) {
-    detail.push('Keine aktiven Verbindungen');
-    return { id: 'activity', label: 'Aktivität', earned, max: 5, detail };
+    detail.push(locale === 'en' ? 'No active connections' : 'Keine aktiven Verbindungen');
+    return { id: 'activity', label: L('activity', locale), earned, max: 5, detail };
   }
 
   const now = Date.now();
@@ -334,100 +386,144 @@ function computeActivity(visible: Connection[]): ScoreComponent {
 
   if (allFresh) {
     earned = 5;
-    detail.push('+5 alle Verbindungen frisch (≤ 7 Tage)');
+    detail.push(
+      locale === 'en'
+        ? '+5 all connections fresh (≤ 7 days)'
+        : '+5 alle Verbindungen frisch (≤ 7 Tage)',
+    );
   } else {
-    detail.push('Manche Verbindungen veraltet (Aktualisieren klicken)');
+    detail.push(
+      locale === 'en'
+        ? 'Some connections stale (click Refresh)'
+        : 'Manche Verbindungen veraltet (Aktualisieren klicken)',
+    );
   }
-  return { id: 'activity', label: 'Aktivität', earned, max: 5, detail };
+  return { id: 'activity', label: L('activity', locale), earned, max: 5, detail };
 }
-
-// -- Penalty ------------------------------------------------------------
 
 function computePenalty(
   allConnections: Connection[],
   visibleCount: number,
   reportCount: number,
+  locale: Locale,
 ): ScoreComponent {
   const detail: string[] = [];
-  let earned = 0; // negative number; 0 = no penalty
+  let earned = 0;
 
   if (reportCount > 0) {
     earned -= 10;
-    detail.push(`-10 ${reportCount} bestätigte Meldung${reportCount > 1 ? 'en' : ''}`);
+    detail.push(
+      locale === 'en'
+        ? `-10 ${reportCount} confirmed report${reportCount > 1 ? 's' : ''}`
+        : `-10 ${reportCount} bestätigte Meldung${reportCount > 1 ? 'en' : ''}`,
+    );
   }
 
   const failed = allConnections.filter((c) => c.last_error).length;
   if (failed > 0) {
     earned -= 5;
-    detail.push(`-5 ${failed} Verbindung${failed > 1 ? 'en' : ''} mit Fehler`);
+    detail.push(
+      locale === 'en'
+        ? `-5 ${failed} connection${failed > 1 ? 's' : ''} with error`
+        : `-5 ${failed} Verbindung${failed > 1 ? 'en' : ''} mit Fehler`,
+    );
   }
 
-  // Cherry-picking: more than half of verified connections hidden
   const totalVerified = allConnections.length;
   const hiddenCount = totalVerified - visibleCount;
   if (totalVerified >= 4 && hiddenCount / totalVerified > 0.5) {
     earned -= 10;
-    detail.push(`-10 ${hiddenCount} von ${totalVerified} Verbindungen versteckt`);
+    detail.push(
+      locale === 'en'
+        ? `-10 ${hiddenCount} of ${totalVerified} connections hidden`
+        : `-10 ${hiddenCount} von ${totalVerified} Verbindungen versteckt`,
+    );
   }
 
-  if (earned === 0) detail.push('Keine Strafpunkte');
+  if (earned === 0) detail.push(locale === 'en' ? 'No penalty points' : 'Keine Strafpunkte');
 
-  return { id: 'penalty', label: 'Penalty', earned, max: 0, detail };
+  return { id: 'penalty', label: L('penalty', locale), earned, max: 0, detail };
 }
 
-// -- Suggestions --------------------------------------------------------
-
-function buildSuggestions({
-  visible,
-  identity,
-  marketplace,
-  longevity,
-}: {
-  visible: Connection[];
-  identity: ScoreComponent;
-  marketplace: ScoreComponent;
-  longevity: ScoreComponent;
-}): { delta: number; text: string }[] {
+function buildSuggestions(
+  {
+    visible,
+    identity,
+    marketplace,
+    longevity,
+  }: {
+    visible: Connection[];
+    identity: ScoreComponent;
+    marketplace: ScoreComponent;
+    longevity: ScoreComponent;
+  },
+  locale: Locale,
+): { delta: number; text: string }[] {
   const out: { delta: number; text: string }[] = [];
 
-  // Identity gaps
   const hasKyc = visible.some((c) =>
     KYC_PLATFORMS.includes(c.platform as 'paypal' | 'linkedin'),
   );
   if (!hasKyc) {
-    out.push({ delta: 20, text: 'PayPal oder LinkedIn verknüpfen' });
+    out.push({
+      delta: 20,
+      text: locale === 'en' ? 'Connect PayPal or LinkedIn' : 'PayPal oder LinkedIn verknüpfen',
+    });
   } else if (identity.earned < identity.max) {
     const kyc = visible.find((c) =>
       KYC_PLATFORMS.includes(c.platform as 'paypal' | 'linkedin'),
     );
     if (kyc?.verified_name && !kyc.show_name) {
-      out.push({ delta: 5, text: 'Klarnamen öffentlich anzeigen' });
+      out.push({
+        delta: 5,
+        text: locale === 'en' ? 'Show real name publicly' : 'Klarnamen öffentlich anzeigen',
+      });
     }
     if (kyc?.verified_picture_url && !kyc.show_picture) {
-      out.push({ delta: 5, text: 'Profilbild öffentlich anzeigen' });
+      out.push({
+        delta: 5,
+        text:
+          locale === 'en'
+            ? 'Show profile picture publicly'
+            : 'Profilbild öffentlich anzeigen',
+      });
     }
   }
 
-  // Marketplace gaps
   const realMp = visible.filter(
     (c) =>
       MARKETPLACE_PLATFORMS.includes(c.platform as (typeof MARKETPLACE_PLATFORMS)[number]) &&
       c.platform !== 'paypal',
   );
   if (realMp.length === 0) {
-    out.push({ delta: 10, text: 'Mindestens 1 Marktplatz verknüpfen' });
+    out.push({
+      delta: 10,
+      text:
+        locale === 'en'
+          ? 'Connect at least 1 marketplace'
+          : 'Mindestens 1 Marktplatz verknüpfen',
+    });
   } else if (realMp.length === 1) {
-    out.push({ delta: 10, text: 'Zweiten Marktplatz verknüpfen' });
+    out.push({
+      delta: 10,
+      text: locale === 'en' ? 'Connect a second marketplace' : 'Zweiten Marktplatz verknüpfen',
+    });
   } else if (realMp.length < 4) {
-    out.push({ delta: 10, text: 'Auf 4 Marktplätze ausbauen' });
+    out.push({
+      delta: 10,
+      text: locale === 'en' ? 'Expand to 4 marketplaces' : 'Auf 4 Marktplätze ausbauen',
+    });
   }
 
   if (longevity.earned < longevity.max) {
     out.push({
       delta: 10 - longevity.earned,
-      text: 'Langlebigkeit wächst automatisch über die Zeit',
+      text:
+        locale === 'en'
+          ? 'Longevity grows automatically over time'
+          : 'Langlebigkeit wächst automatisch über die Zeit',
     });
   }
 
-  return out.slice(0, 3); // top 3 actionable
+  return out.slice(0, 3);
 }

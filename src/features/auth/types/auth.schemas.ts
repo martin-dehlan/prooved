@@ -1,12 +1,13 @@
 import { z } from 'zod';
 import { slugSchema } from '@/shared/lib/utils/slug';
 
+// Error messages are translation keys; resolve them in consuming forms.
 export const magicLinkSchema = z.object({
-  email: z.string().email('Ungültige E-Mail-Adresse'),
+  email: z.string().email('errorInvalid'),
 });
 
 export const onboardingSchema = z.object({
-  name: z.string().min(2, 'Mindestens 2 Zeichen').max(64).optional(),
+  name: z.string().min(2, 'nameMinError').max(64).optional(),
   slug: slugSchema,
 });
 

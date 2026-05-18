@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export function CopyLinkButton({ slug }: { slug: string }) {
+  const t = useTranslations('PublicProfile');
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -22,7 +24,7 @@ export function CopyLinkButton({ slug }: { slug: string }) {
       onClick={copy}
       className="inline-flex h-11 items-center gap-2 rounded-full bg-text px-5 text-sm font-semibold text-bg transition hover:opacity-90 active:scale-[0.98]"
     >
-      {copied ? '✓ Kopiert' : 'Profil-Link kopieren'}
+      {copied ? t('linkCopied') : t('copyLink')}
     </button>
   );
 }

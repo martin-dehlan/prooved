@@ -7,6 +7,7 @@ export type Platform =
   | 'etsy'
   | 'github'
   | 'linkedin'
+  | 'facebook'
   | 'discogs'
   | 'willhaben'
   | 'shpock'
@@ -43,6 +44,7 @@ export const PLATFORM_LABELS: Record<Platform, string> = {
   etsy: 'Etsy',
   github: 'GitHub',
   linkedin: 'LinkedIn',
+  facebook: 'Facebook',
   discogs: 'Discogs',
   willhaben: 'Willhaben',
   shpock: 'Shpock',
@@ -65,6 +67,7 @@ export const PLATFORM_TIER: Record<Platform, Tier> = {
   etsy: 'gold',
   github: 'silver',
   linkedin: 'gold',
+  facebook: 'silver',
   discogs: 'silver',
   willhaben: 'silver',
   shpock: 'silver',
@@ -81,6 +84,7 @@ export const PLATFORM_METHOD: Record<Platform, VerifyMethod> = {
   etsy: 'oauth',
   github: 'oauth',
   linkedin: 'oauth',
+  facebook: 'oauth',
   discogs: 'bio_code',
   willhaben: 'bio_code',
   shpock: 'bio_code',

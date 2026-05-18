@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { Button, Input } from '@/shared/components/ui';
 import { PlatformIcon } from '@/shared/components/ui/PlatformIcon';
 import { TrustScoreCard } from './TrustScoreCard';
@@ -18,6 +19,7 @@ import { PLATFORM_LABELS, PLATFORM_TIER } from '@/shared/types/platform.types';
 import { deriveStatus, type Connection } from '@/features/connections/types/connection.types';
 
 export function ConnectionList() {
+  const t = useTranslations('ConnectionList');
   const { authUserId, appUser, loading } = useAuth();
   const { data, isLoading } = useConnections(authUserId);
   const refresh = useRefreshConnection(authUserId);
@@ -27,10 +29,10 @@ export function ConnectionList() {
   const [query, setQuery] = useState('');
 
   if (loading || isLoading) {
-    return <p className="text-sm text-muted">Lade…</p>;
+    return <p className="text-sm text-muted">{t('loading')}</p>;
   }
   if (!appUser) {
-    return <p className="text-sm text-muted">Kein Profil gefunden.</p>;
+    return <p className="text-sm text-muted">{t('noProfile')}</p>;
   }
 
   const allConnections = data ?? [];
@@ -57,7 +59,7 @@ export function ConnectionList() {
     <div className="space-y-6">
       <section>
         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-          Dein Profil
+          {t('yourProfile')}
         </p>
         <Link
           href={`/${appUser.slug}`}
@@ -85,19 +87,19 @@ export function ConnectionList() {
       <section className="space-y-3">
         <header className="flex items-baseline justify-between">
           <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Plattformen
+            {t('platforms')}
           </h2>
           <span className="text-xs text-muted tabular-nums">
             {q
               ? `${connections.length} / ${allConnections.length}`
-              : `${allConnections.length} aktiv`}
+              : t('active', { count: allConnections.length })}
           </span>
         </header>
 
         {allConnections.length >= 4 && (
           <Input
             type="search"
-            placeholder="Suche…"
+            placeholder={t('search')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="h-9 text-sm"
@@ -106,14 +108,12 @@ export function ConnectionList() {
 
         {allConnections.length === 0 ? (
           <div className="rounded-lg border border-dashed border-elevated bg-surface p-6 text-center">
-            <p className="text-sm text-text">Noch keine Plattform verknüpft.</p>
-            <p className="mt-1 text-xs text-muted">
-              Verknüpfe eBay, PayPal, Vinted oder eine andere Plattform.
-            </p>
+            <p className="text-sm text-text">{t('noConnections')}</p>
+            <p className="mt-1 text-xs text-muted">{t('noConnectionsHint')}</p>
           </div>
         ) : connections.length === 0 ? (
           <p className="rounded-lg border border-dashed border-elevated bg-surface p-6 text-center text-sm text-muted">
-            Keine Treffer für „{query}"
+            {t('noResults', { query })}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -122,7 +122,7 @@ export function ConnectionList() {
               const errMsg = showError
                 ? refresh.error instanceof Error
                   ? refresh.error.message
-                  : 'Unbekannter Fehler'
+                  : t('unknownError')
                 : null;
               return (
                 <li key={c.id}>
@@ -132,7 +132,7 @@ export function ConnectionList() {
                     onToggle={() => setOpenId(openId === c.id ? null : c.id)}
                     onRefresh={() => refresh.mutate(c.id)}
                     onDelete={() => {
-                      if (confirm(`${PLATFORM_LABELS[c.platform]} trennen?`))
+                      if (confirm(t('disconnectConfirm', { platform: PLATFORM_LABELS[c.platform] })))
                         remove.mutate(c.id);
                     }}
                     onToggleVisibility={() =>
@@ -158,7 +158,7 @@ export function ConnectionList() {
 
         <Link href="/dashboard/connect" className="block">
           <Button variant="primary" size="md" block>
-            Plattform hinzufügen
+            {t('addPlatform')}
           </Button>
         </Link>
       </section>
@@ -219,14 +219,6 @@ const PLATFORM_TILE: Record<string, { bg: string; fg: string }> = {
   custom:        { bg: 'bg-elevated',   fg: 'text-text' },
 };
 
-const STATUS: Record<ReturnType<typeof deriveStatus>, { label: string; cls: string }> = {
-  verified: { label: 'verifiziert', cls: 'text-accent' },
-  expiring: { label: 'läuft bald ab', cls: 'text-warning' },
-  expired: { label: 'abgelaufen', cls: 'text-danger' },
-  pending: { label: 'ausstehend', cls: 'text-muted' },
-  temporarily_unavailable: { label: 'nicht verfügbar', cls: 'text-warning' },
-};
-
 const TIER_DOT: Record<string, string> = {
   gold: 'bg-warning',
   silver: 'bg-muted/40',
@@ -258,16 +250,24 @@ function ConnectionRow({
   busy: boolean;
   errorMessage: string | null;
 }) {
+  const t = useTranslations('ConnectionList');
   const tier = PLATFORM_TIER[c.platform];
-  const status = STATUS[deriveStatus(c)];
+  const STATUS_MAP: Record<ReturnType<typeof deriveStatus>, { label: string; cls: string }> = {
+    verified: { label: t('statusVerified'), cls: 'text-accent' },
+    expiring: { label: t('statusExpiring'), cls: 'text-warning' },
+    expired: { label: t('statusExpired'), cls: 'text-danger' },
+    pending: { label: t('statusPending'), cls: 'text-muted' },
+    temporarily_unavailable: { label: t('statusUnavailable'), cls: 'text-warning' },
+  };
+  const status = STATUS_MAP[deriveStatus(c)];
   const tile = PLATFORM_TILE[c.platform] ?? { bg: 'bg-elevated', fg: 'text-text' };
   const label =
     c.platform === 'custom' && c.custom_label
       ? c.custom_label
       : PLATFORM_LABELS[c.platform];
   const stateChips: string[] = [];
-  if (c.hidden) stateChips.push('versteckt');
-  if (c.paused) stateChips.push('pausiert');
+  if (c.hidden) stateChips.push(t('chipHidden'));
+  if (c.paused) stateChips.push(t('chipPaused'));
 
   return (
     <div
@@ -313,7 +313,7 @@ function ConnectionRow({
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
             {c.rating_score != null && (
               <>
-                <dt className="text-muted">Bewertung</dt>
+                <dt className="text-muted">{t('fieldRating')}</dt>
                 <dd className="text-text tabular-nums">
                   ★ {c.rating_score.toFixed(1)}
                   {c.rating_count != null && ` · ${c.rating_count}`}
@@ -322,17 +322,17 @@ function ConnectionRow({
             )}
             {c.verified_at && (
               <>
-                <dt className="text-muted">Verifiziert</dt>
+                <dt className="text-muted">{t('fieldVerified')}</dt>
                 <dd className="text-text tabular-nums">
-                  {new Date(c.verified_at).toLocaleDateString('de-DE')}
+                  {new Date(c.verified_at).toLocaleDateString()}
                 </dd>
               </>
             )}
             {c.expires_at && (
               <>
-                <dt className="text-muted">Läuft ab</dt>
+                <dt className="text-muted">{t('fieldExpires')}</dt>
                 <dd className="text-text tabular-nums">
-                  {new Date(c.expires_at).toLocaleDateString('de-DE')}
+                  {new Date(c.expires_at).toLocaleDateString()}
                 </dd>
               </>
             )}
@@ -341,11 +341,11 @@ function ConnectionRow({
           {(c.verified_name || c.verified_picture_url) && !c.hidden && (
             <div className="space-y-1.5 rounded-md bg-surface p-2.5">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-                Öffentlich zeigen
+                {t('publicShowHeading')}
               </p>
               {c.verified_name && (
                 <FieldToggle
-                  label={`Name "${c.verified_name}"`}
+                  label={t('publicShowName', { name: c.verified_name })}
                   enabled={c.show_name}
                   onToggle={onToggleName}
                   disabled={busy}
@@ -353,7 +353,7 @@ function ConnectionRow({
               )}
               {c.verified_picture_url && (
                 <FieldToggle
-                  label="Profilbild"
+                  label={t('publicShowPicture')}
                   enabled={c.show_picture}
                   onToggle={onTogglePicture}
                   disabled={busy}
@@ -368,9 +368,9 @@ function ConnectionRow({
               variant="outline"
               onClick={onRefresh}
               disabled={busy || c.paused}
-              title={c.paused ? 'Pausiert' : undefined}
+              title={c.paused ? t('actionPaused') : undefined}
             >
-              {busy ? '…' : 'Aktualisieren'}
+              {busy ? '…' : t('actionRefresh')}
             </Button>
             <Button
               size="sm"
@@ -378,7 +378,7 @@ function ConnectionRow({
               onClick={onTogglePause}
               disabled={busy}
             >
-              {c.paused ? 'Fortsetzen' : 'Pausieren'}
+              {c.paused ? t('actionResume') : t('actionPause')}
             </Button>
             <Button
               size="sm"
@@ -386,16 +386,16 @@ function ConnectionRow({
               onClick={onToggleVisibility}
               disabled={busy}
             >
-              {c.hidden ? 'Anzeigen' : 'Verstecken'}
+              {c.hidden ? t('actionShow') : t('actionHide')}
             </Button>
             <Button size="sm" variant="ghost" onClick={onDelete} disabled={busy}>
-              Trennen
+              {t('actionDisconnect')}
             </Button>
           </div>
 
           {c.last_error && (
             <p className="rounded-md bg-warning/10 px-2.5 py-1.5 text-[11px] text-warning">
-              Refresh-Fehler: {c.last_error}
+              {t('refreshError', { message: c.last_error })}
             </p>
           )}
           {errorMessage && (

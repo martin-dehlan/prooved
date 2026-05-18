@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { computeTrust, type Tier } from '@/shared/lib/trust';
+import { useLocale, useTranslations } from 'next-intl';
+import { computeTrust, type Tier, type Locale } from '@/shared/lib/trust';
 import type { Connection } from '@/features/connections/types/connection.types';
 
 const TIER_BG: Record<Tier, string> = {
@@ -27,14 +28,16 @@ const TIER_BAR: Record<Tier, string> = {
 };
 
 export function TrustScoreCard({ connections }: { connections: Connection[] }) {
+  const t = useTranslations('TrustScoreCard');
+  const locale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
-  const score = computeTrust({ connections });
+  const score = computeTrust({ connections, locale });
 
   return (
     <section className="space-y-3 rounded-lg border border-elevated bg-surface p-4">
       <header className="flex items-baseline justify-between gap-2">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-          Trust-Score
+          {t('title')}
         </h2>
         <span
           className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${TIER_BG[score.tier]} ${TIER_TEXT[score.tier]}`}
@@ -59,7 +62,7 @@ export function TrustScoreCard({ connections }: { connections: Connection[] }) {
 
       {score.qualityCapped && (
         <p className="rounded-md bg-danger/10 px-2.5 py-1.5 text-[11px] text-danger">
-          ⚠ Quote unter 70 % — Score auf Bronze begrenzt.
+          {t('qualityCap')}
         </p>
       )}
 
@@ -79,7 +82,7 @@ export function TrustScoreCard({ connections }: { connections: Connection[] }) {
         onClick={() => setOpen((v) => !v)}
         className="text-[11px] text-muted underline-offset-2 hover:text-text hover:underline"
       >
-        {open ? 'Details verbergen' : 'Details anzeigen'}
+        {open ? t('hideDetails') : t('showDetails')}
       </button>
 
       {open && (

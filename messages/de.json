@@ -1,0 +1,732 @@
+{
+  "Metadata": {
+    "title": "Prooved — Reputation. Plattformübergreifend. Beweisbar.",
+    "description": "Bündele eBay-, PayPal-, Vinted- und Kleinanzeigen-Bewertungen in einem verifizierten Profil."
+  },
+  "Common": {
+    "back": "← Zurück",
+    "home": "Startseite",
+    "loading": "Lade…",
+    "save": "Speichern",
+    "saving": "Speichere…",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "continue": "Weiter",
+    "retry": "Erneut versuchen",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "share": "Teilen",
+    "settings": "Einstellungen",
+    "open": "Öffnen",
+    "ok": "OK",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "unknownError": "Unbekannter Fehler"
+  },
+  "Header": {
+    "signIn": "Anmelden",
+    "menu": "Menü",
+    "settings": "Einstellungen",
+    "theme": "Design",
+    "language": "Sprache"
+  },
+  "Hero": {
+    "betaBadge": "Beta",
+    "headlineLine1": "Eine Reputation.",
+    "headlineLine2": "Ein Link.",
+    "subline": "Bündele deine Bewertungen von eBay, PayPal, Vinted und Kleinanzeigen in einem verifizierten Profil.",
+    "cta": "Jetzt loslegen",
+    "ctaHint": "Kostenlos · Kein Passwort · 30 Sek",
+    "step1": "Mit Magic Link anmelden",
+    "step2": "Plattformen verknüpfen (OAuth oder Bio-Code)",
+    "step3": "Profil-Link teilen — statt Screenshots",
+    "disclaimer": "Wir erstellen keine eigenen Bewertungen. Wir verifizieren nur, dass ein Account dir gehört."
+  },
+  "LegalFooter": {
+    "about": "Über",
+    "privacy": "Datenschutz",
+    "terms": "AGB",
+    "imprint": "Impressum",
+    "copyright": "© {year} Prooved"
+  },
+  "LanguageSwitcher": {
+    "label": "Sprache",
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "AboutPage": {
+    "metaTitle": "Über Prooved — Reputation. Plattformübergreifend.",
+    "metaDescription": "Prooved bündelt deine Bewertungen von eBay, PayPal, Vinted und Kleinanzeigen in einem verifizierten Profil.",
+    "h1": "Über Prooved",
+    "tagline": "Eine Reputation. Ein Link. Plattformübergreifend.",
+    "whatIsTitle": "Was Prooved ist",
+    "whatIs": "Prooved bündelt deine Bewertungen von Marktplätzen wie eBay, PayPal, Vinted und Kleinanzeigen in einem einzigen, teilbaren Profil. Statt Screenshots oder „glaub mir doch\" bekommst du einen verifizierten Link, den du in Inseraten oder DMs teilst.",
+    "whatIsNotTitle": "Was Prooved nicht ist",
+    "whatIsNot": "Prooved erstellt <strong>keine eigenen Bewertungen</strong>. Wir verifizieren nur, dass ein Account wirklich der angegebenen Person gehört, und zeigen die offiziellen Statistiken der Plattform an. Quelle und Verifizierungsdatum stehen transparent unter jeder Karte.",
+    "howVerifyTitle": "Wie wir verifizieren",
+    "howVerifyGold": "<strong>Gold</strong> — offizielle OAuth-Integration (eBay, PayPal). Höchstes Vertrauen.",
+    "howVerifySilver": "<strong>Silver</strong> — Bio-Code-Verfahren: ein Code in deinem Plattform-Profil beweist Eigentum (Vinted, Kleinanzeigen).",
+    "howVerifyBronze": "<strong>Bronze</strong> — öffentlicher Profil-Snapshot.",
+    "privacyTitle": "Datenschutz",
+    "privacyText": "Wir speichern nur, was nötig ist: E-Mail, Slug, verschlüsselte Plattform-Tokens, gecachte Bewertungs-Statistiken. Du kannst jederzeit deine Daten exportieren oder den Account löschen. Details in der <link>Datenschutzerklärung</link>.",
+    "contactTitle": "Kontakt",
+    "contactText": "Fragen, Feedback, Bug-Reports:",
+    "cta": "Jetzt loslegen"
+  },
+  "HowItWorks": {
+    "metaTitle": "Wie Prooved funktioniert",
+    "metaDescription": "Was Prooved verifiziert, was wir nicht garantieren — transparent erklärt.",
+    "h1": "Wie Prooved funktioniert",
+    "intro": "Wir aggregieren deine echte Reputation von eBay, PayPal, Vinted & anderen Plattformen in einem teilbaren Profil. Transparent, ohne Black-Box-Score, ohne erfundene Bewertungen.",
+    "checkTitle": "Was wir prüfen",
+    "checkOwnership": "<strong>Eigentum</strong>: Nur du kannst deinen Account verifizieren — entweder per OAuth-Login (eBay, PayPal, GitHub, LinkedIn) oder per Bio-Code in deiner Profil-Beschreibung auf Plattformen ohne API (Vinted, Kleinanzeigen, Discogs, …).",
+    "checkData": "<strong>Plattform-Daten</strong>: Wir lesen öffentlich verfügbare Bewertungs-Statistiken (Sterne, Anzahl, % positiv, Mitglied-seit) und zeigen sie 1:1 weiter.",
+    "checkKyc": "<strong>Identität bei KYC-Plattformen</strong>: PayPal und LinkedIn liefern verifizierte Klarnamen aus echten KYC-Prozessen. Wenn du das anzeigst, weiß der Käufer: dieser Name wurde von einer dritten Stelle geprüft.",
+    "noGuaranteeTitle": "Was wir NICHT garantieren",
+    "noGuaranteeAuth": "<strong>Echtheit der Bewertungen</strong>: Wir zeigen, was die Plattform anzeigt. Wenn ein Account gefälschte Bewertungen hat — das ist ein Plattform-Problem, kein Prooved-Problem.",
+    "noGuaranteeTx": "<strong>Transaktions-Schutz</strong>: Prooved ist kein Treuhand-Service. Bei Käufen weiterhin Käufer-Schutz der jeweiligen Plattform nutzen (PayPal, eBay, ...).",
+    "noGuaranteeLive": "<strong>Aktuelle Verfügbarkeit / Lieferung</strong>: Wir zeigen Daten, keine Echtzeit-Aktivität.",
+    "scoreTitle": "Der Vertrauens-Score",
+    "scoreIntro": "Maximal 100 Punkte aus 5 transparenten Bausteinen, jeder einzeln sichtbar im Profil-Breakdown:",
+    "scoreIdentity": "Identität",
+    "scoreIdentityDetail": "KYC (PayPal/LinkedIn) +20 · Klarname öffentlich +5 · Bild verifiziert +5",
+    "scoreMarketplace": "Marktplatz-Reputation",
+    "scoreMarketplaceDetail": "Anzahl Plattformen +10/+20/+30 · Quote ≥95% +10 · Quote <80% Strafe",
+    "scoreVolume": "Bewertungs-Volumen",
+    "scoreVolumeDetail": "≥1 +5 · ≥10 +10 · ≥100 +15",
+    "scoreLongevity": "Langlebigkeit",
+    "scoreLongevityDetail": "Älteste Plattform-Mitgliedschaft: >1J +2 · >2J +5 · >5J +10",
+    "scoreActivity": "Aktivität",
+    "scoreActivityDetail": "Alle Verbindungen ≤7 Tage frisch +5",
+    "scoreMax": "max {max}",
+    "tierExplain": "Tier-Stufen: 0–29 Neu · 30–49 Bronze · 50–69 Silver · 70–89 Gold · 90+ Diamond. <strong>Tier-Cap</strong>: bei unter 70 % positiver Quote wird der Score auf max. Bronze begrenzt — unabhängig von der Anzahl verknüpfter Plattformen.",
+    "readingTitle": "Was beim Lesen einer Profil-Seite zählt",
+    "readingHeader": "<strong>Stat-Header</strong>: positive Quote (rot wenn <50 %, orange wenn <90 %), Bewertungs-Anzahl, Aktiv-seit-Jahr.",
+    "readingMismatch": "<strong>Klarname-Mismatch-Warnung</strong>: Wenn LinkedIn-Name und PayPal-Name nicht zusammenpassen, sieht der Käufer das.",
+    "readingCards": "<strong>Plattform-Karten</strong>: Konkrete Bewertungs-Zahl, Mitglied-seit, Datenstand. Anomalien (z.B. 500 Bewertungen aber Account erst dieses Jahr) werden gelb markiert.",
+    "readingBreakdown": "<strong>Score-Breakdown</strong>: Klick auf den Score öffnet die vollständige Berechnung — keine versteckten Faktoren.",
+    "securityTitle": "Sicherheit deiner Daten",
+    "securityTokens": "OAuth-Tokens AES-256-GCM verschlüsselt, nur server-side entschlüsselt",
+    "securityReadonly": "Alle OAuth-Scopes sind <strong>Read-Only</strong> — selbst bei Token-Leak kann niemand in deinem Namen verkaufen oder posten",
+    "securityBio": "Bio-Code kryptographisch an deinen Prooved-Account gebunden — andere können fremde Profile nicht selbst verifizieren",
+    "securityMagic": "Magic-Link-Login statt Passwort — kein Brute-Force",
+    "securityControl": "Pro Connection: Aktualisieren / Pausieren / Verstecken / Trennen — du behältst die Kontrolle",
+    "securityNotify": "Email-Benachrichtigung bei jeder neuen Verknüpfung — Account-Hijack fällt sofort auf",
+    "limitsTitle": "Limits & ehrliche Hinweise",
+    "limitsSandbox": "eBay-Sandbox-Test-User haben oft 0 % positive Quote — das ist Plattform-Test-Daten, kein echtes Profil",
+    "limitsCustom": "\"Andere Plattform\" verifiziert Eigentum eines beliebigen Public-Links, extrahiert aber keine Bewertungs-Daten",
+    "limitsBio": "Neue Marktplätze ohne offizielle API können wir nur per Bio-Code prüfen — das ist gegen Layout-Änderungen anfällig",
+    "limitsKyc": "Wir verifizieren keine Identität auf staatlichem Niveau (Postident o.ä.) — KYC kommt indirekt über PayPal/LinkedIn",
+    "questions": "Fragen? Schreib uns —"
+  },
+  "Imprint": {
+    "metaTitle": "Impressum — Prooved",
+    "h1": "Impressum",
+    "subline": "Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)",
+    "providerTitle": "Anbieter",
+    "providerName": "Martin Dehlan",
+    "providerStreet": "Am Breiten Luch 46",
+    "providerCity": "13053 Berlin",
+    "providerCountry": "Deutschland",
+    "contactTitle": "Kontakt",
+    "contactEmail": "E-Mail:",
+    "vatTitle": "Umsatzsteuer",
+    "vatText": "Gemäß § 19 UStG wird keine Umsatzsteuer erhoben (Kleinunternehmer).",
+    "responsibleTitle": "Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV",
+    "responsibleAddress": "Am Breiten Luch 46, 13053 Berlin",
+    "euDisputeTitle": "EU-Streitschlichtung",
+    "euDisputeText": "Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <link>https://ec.europa.eu/consumers/odr/</link>. Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.",
+    "liabilityContentTitle": "Haftung für Inhalte",
+    "liabilityContentText": "Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.",
+    "liabilityLinksTitle": "Haftung für Links",
+    "liabilityLinksText": "Unser Angebot enthält Links zu externen Websites Dritter (eBay, PayPal, Vinted, Kleinanzeigen u.a.), auf deren Inhalte wir keinen Einfluss haben. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber verantwortlich.",
+    "trademarkTitle": "Marken- und Urheberrecht",
+    "trademarkText": "Genannte Marken und Logos (eBay, PayPal, Vinted, Kleinanzeigen, Discogs etc.) sind Eigentum ihrer jeweiligen Inhaber. Prooved steht in keiner geschäftlichen Verbindung zu diesen Plattformen, sofern nicht ausdrücklich angegeben."
+  },
+  "Privacy": {
+    "metaTitle": "Datenschutzerklärung — Prooved",
+    "h1": "Datenschutzerklärung",
+    "effective": "Stand: {date}",
+    "s1Title": "Verantwortlicher",
+    "s1Text": "Martin Dehlan, Am Breiten Luch 46, 13053 Berlin, Deutschland. E-Mail:",
+    "s2Title": "Welche Daten wir verarbeiten",
+    "s2Account": "<strong>Account-Daten:</strong> E-Mail-Adresse, Slug, optionaler Name. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).",
+    "s2Connections": "<strong>Plattform-Verbindungen:</strong> Plattform-User-ID, Profil-URL, Verifizierungs-Tokens (verschlüsselt mit AES-256), gecachte öffentliche Bewertungs-Statistiken (Score, Anzahl).",
+    "s2Wallet": "<strong>Wallet-Daten (optional):</strong> Solana-Public-Key, kryptographische Signatur. Nur wenn du Wallet-Funktionen nutzt.",
+    "s2Reports": "<strong>Reports:</strong> IP-Adresse, Zeitstempel, Begründung. Zur Spam- und Missbrauchsabwehr (Art. 6 Abs. 1 lit. f DSGVO).",
+    "s2Logs": "<strong>Server-Logs:</strong> IP-Adresse, User-Agent, Zeitstempel durch unseren Hoster (Vercel). Aufbewahrung max. 30 Tage.",
+    "s3Title": "Auftragsverarbeiter und externe Dienste",
+    "s3Vercel": "<strong>Vercel Inc.</strong> (USA) — Hosting, CDN, Logs. Standardvertragsklauseln (SCC) und EU-US Data Privacy Framework.",
+    "s3Supabase": "<strong>Supabase Inc.</strong> (USA, EU-Region möglich) — Datenbank, Authentifizierung, Edge Functions.",
+    "s3Resend": "<strong>Resend</strong> — Versand von Magic-Link- und System-E-Mails.",
+    "s3Posthog": "<strong>PostHog</strong> (EU Cloud, Frankfurt) — Produkt-Analytik und Session-Replay zur Verbesserung des Dienstes. Cookieless-Modus (Persistenz nur im Arbeitsspeicher), keine Drittanbieter-Cookies. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Produktverbesserung und Fehleranalyse).",
+    "s3Third": "<strong>Drittplattform-APIs</strong> (eBay, PayPal, Vinted, Kleinanzeigen, Discogs): Übermittlung erfolgt nur auf deine Veranlassung im Rahmen der Verifizierung. Es gelten die Datenschutzbestimmungen der jeweiligen Plattform.",
+    "s4Title": "OAuth und Bio-Code",
+    "s4Oauth": "Bei OAuth-Verfahren (eBay, PayPal) werden Access-Tokens AES-256 verschlüsselt gespeichert. Wir greifen ausschließlich auf öffentliche Bewertungs-Endpunkte zu — keine Transaktionsdaten, keine Käufe, keine Nachrichten.",
+    "s4Bio": "Bei Bio-Code-Verfahren (Vinted, Kleinanzeigen) prüft unser Server einmalig deinen öffentlichen Profiltext und löscht den Code danach. Es werden keine Login-Daten der Plattformen gespeichert.",
+    "s5Title": "Cookies und ähnliche Technologien",
+    "s5Cookies": "Wir verwenden technisch notwendige Cookies für die Authentifizierung (Supabase Session) und ein lokales Theme-Setting (Dark/Light). Tracking- oder Werbe-Cookies setzen wir nicht ein.",
+    "s5Posthog": "Unser Analyse-Dienst PostHog läuft im cookieless Modus (Persistenz nur im Arbeitsspeicher der laufenden Browser-Session) und setzt weder Cookies noch Local-Storage-Einträge. Es findet keine Wiedererkennung über Sitzungsgrenzen hinweg statt.",
+    "s6Title": "Öffentliches Profil",
+    "s6Text": "Dein Slug, dein Name (falls angegeben) und verifizierte Plattform-Statistiken sind öffentlich unter <code>/{slug}</code> abrufbar. Indexierung durch Suchmaschinen ist möglich. Du kannst das Profil jederzeit löschen.",
+    "s7Title": "Speicherdauer",
+    "s7Account": "Account-Daten: bis zur Löschung deines Accounts",
+    "s7Connections": "Verbindungen: bis zur Trennung oder Account-Löschung",
+    "s7Logs": "Server-Logs: max. 30 Tage",
+    "s7Reports": "Reports: 12 Monate (zur Missbrauchsabwehr)",
+    "s8Title": "Deine Rechte",
+    "s8Rights": "Du hast das Recht auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21 DSGVO). Beschwerderecht bei der zuständigen Aufsichtsbehörde: <link>Berliner Beauftragte für Datenschutz</link>.",
+    "s8Account": "Deinen Account kannst du jederzeit selbst unter <settings>Einstellungen</settings> löschen. Für Datenexport oder andere Anfragen schreib uns an",
+    "s9Title": "On-Chain-Daten (Solana)",
+    "s9Text": "Falls du Soulbound-Tokens (SBTs) mintest, werden diese auf der Solana-Blockchain unwiderruflich öffentlich gespeichert. Eine Löschung durch uns ist technisch nicht möglich. Diese Funktion ist optional und erfordert deine ausdrückliche Zustimmung.",
+    "s10Title": "Änderungen",
+    "s10Text": "Diese Erklärung kann angepasst werden. Die jeweils aktuelle Version findest du unter dieser URL."
+  },
+  "DataDeletion": {
+    "metaTitle": "Datenlöschung — Prooved",
+    "h1": "Datenlöschung",
+    "intro": "Du kannst deinen Prooved-Account und alle damit verbundenen Daten jederzeit selbst löschen. Diese Seite erklärt dir wie.",
+    "s1Title": "1. Account selbst löschen (empfohlen)",
+    "s1Step1": "Melde dich auf prooved.xyz an.",
+    "s1Step2": "Öffne die <settings>Einstellungen</settings> in deinem Dashboard.",
+    "s1Step3": "Klick „Account löschen\" und bestätige.",
+    "s1Effect": "Was passiert: Account, alle Plattform-Verbindungen (eBay, PayPal, Vinted, Kleinanzeigen, Facebook, Discogs), Wallet-Verknüpfung, Reports und Logs werden sofort und unwiderruflich aus unserer Datenbank gelöscht. Dein öffentliches Profil unter <code>/dein-slug</code> ist umgehend nicht mehr erreichbar.",
+    "s2Title": "2. Nur Facebook-Verbindung trennen",
+    "s2Text": "Wenn du nur Facebook trennen willst (Account bei Prooved behalten), öffne im Dashboard die Verbindungs-Karte und klick „Trennen\". Wir löschen den gespeicherten Facebook-Access-Token, die Facebook-User-ID und alle Profildaten von Facebook aus unserer Datenbank.",
+    "s2Alt": "Alternativ kannst du Prooved direkt bei Facebook entfernen: Facebook → Einstellungen → Apps und Websites → Prooved → Entfernen. Wir werden über den Webhook benachrichtigt und löschen deine Facebook-Daten dann automatisch.",
+    "s3Title": "3. Löschung per E-Mail anfordern",
+    "s3Text": "Falls du keinen Zugriff mehr auf deinen Account hast, schreib uns mit der bei der Registrierung verwendeten E-Mail-Adresse an",
+    "s3Sla": "Wir bestätigen die Löschung innerhalb von 30 Tagen (DSGVO Art. 17).",
+    "s4Title": "Was wir nicht löschen können",
+    "s4Onchain": "Solana-Soulbound-Tokens (SBTs), die du selbst gemintet hast, liegen unwiderruflich auf der Blockchain. Eine Löschung ist technisch unmöglich. Diese Funktion ist optional und du wirst vor dem Mint ausdrücklich gewarnt.",
+    "s4Logs": "Anonymisierte Server-Logs (ohne Personenbezug) können aus Sicherheitsgründen bis zu 30 Tage aufbewahrt werden."
+  },
+  "Terms": {
+    "metaTitle": "Nutzungsbedingungen — Prooved",
+    "h1": "Nutzungsbedingungen",
+    "effective": "Stand: {date}",
+    "s1Title": "Geltungsbereich",
+    "s1Text": "Diese Nutzungsbedingungen regeln die Nutzung des Dienstes „Prooved\" (nachfolgend „Dienst\"), bereitgestellt von Martin Dehlan, Am Breiten Luch 46, 13053 Berlin (nachfolgend „Anbieter\"). Mit der Registrierung erklärst du dich mit diesen Bedingungen einverstanden.",
+    "s2Title": "Beschreibung des Dienstes",
+    "s2Text1": "Prooved ermöglicht es Nutzern, Bewertungen und Reputationsdaten von Drittplattformen (z. B. eBay, PayPal, Vinted, Kleinanzeigen) über offizielle APIs oder Bio-Code-Verfahren zu verifizieren und in einem öffentlichen Profil zu bündeln.",
+    "s2Text2": "Der Anbieter erstellt keine eigenen Bewertungen. Angezeigte Werte stammen ausschließlich von der jeweiligen Drittplattform.",
+    "s3Title": "Registrierung und Account",
+    "s3Text1": "Die Nutzung erfordert eine Registrierung mit gültiger E-Mail-Adresse. Du bist für die Geheimhaltung deiner Zugangsdaten verantwortlich. Pro Person ist nur ein Account zulässig.",
+    "s3Text2": "Du sicherst zu, dass alle verknüpften Plattform-Accounts tatsächlich dir gehören. Die Verknüpfung fremder Accounts ist untersagt.",
+    "s4Title": "Pflichten der Nutzer",
+    "s4Intro": "Du verpflichtest dich, den Dienst nicht zu nutzen, um:",
+    "s4Fake": "fremde Accounts oder Bewertungen vorzutäuschen,",
+    "s4Bypass": "die technischen Schutzmaßnahmen oder Rate-Limits zu umgehen,",
+    "s4Share": "Bio-Codes oder Verifikations-Tokens an Dritte weiterzugeben,",
+    "s4Scrape": "automatisierte Massenabfragen (Scraping) durchzuführen,",
+    "s4ThirdParty": "gegen die Nutzungsbedingungen der angebundenen Drittplattformen zu verstoßen.",
+    "s5Title": "Drittplattformen",
+    "s5Text": "Der Anbieter steht in keiner offiziellen Geschäftsbeziehung zu eBay, PayPal, Vinted, Kleinanzeigen, Discogs oder anderen genannten Plattformen, sofern nicht ausdrücklich angegeben. Verfügbarkeit und Funktion einzelner Integrationen können sich ändern, wenn die Drittplattformen ihre APIs oder Richtlinien anpassen.",
+    "s6Title": "Verfügbarkeit",
+    "s6Text": "Der Anbieter bemüht sich um hohe Verfügbarkeit, schuldet aber keine ununterbrochene Erreichbarkeit. Wartungsarbeiten, Ausfälle bei Drittplattformen oder höhere Gewalt können zu Einschränkungen führen.",
+    "s7Title": "Haftung",
+    "s7Text1": "Der Anbieter haftet unbeschränkt bei Vorsatz und grober Fahrlässigkeit sowie bei Schäden aus Verletzung des Lebens, des Körpers oder der Gesundheit. Bei einfacher Fahrlässigkeit haftet der Anbieter nur bei Verletzung wesentlicher Vertragspflichten und begrenzt auf den vorhersehbaren, vertragstypischen Schaden.",
+    "s7Text2": "Für die Richtigkeit der von Drittplattformen gelieferten Daten wird keine Haftung übernommen.",
+    "s8Title": "Kündigung und Löschung",
+    "s8Text": "Du kannst deinen Account jederzeit unter <settings>Einstellungen</settings> löschen. Der Anbieter kann Accounts bei Verstößen gegen diese Bedingungen sperren oder löschen.",
+    "s9Title": "Änderungen",
+    "s9Text": "Der Anbieter behält sich vor, diese Bedingungen anzupassen. Über wesentliche Änderungen wirst du per E-Mail informiert. Widerspruchsrecht: 30 Tage; nach Fristablauf gelten die geänderten Bedingungen als akzeptiert.",
+    "s10Title": "Schlussbestimmungen",
+    "s10Text": "Es gilt deutsches Recht. Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt."
+  },
+  "RegisterPage": {
+    "metaTitle": "Anmelden — Prooved"
+  },
+  "Dashboard": {
+    "metaTitle": "Dashboard — Prooved",
+    "ariaDashboard": "Dashboard",
+    "ariaSettings": "Einstellungen"
+  },
+  "DashboardSettings": {
+    "metaTitle": "Einstellungen — Prooved",
+    "h1": "Einstellungen",
+    "back": "Zurück",
+    "sectionAccount": "Account",
+    "sectionAppearance": "Darstellung",
+    "sectionDanger": "Account löschen",
+    "fieldEmail": "E-Mail",
+    "fieldProfileUrl": "Profil-URL",
+    "fieldMemberSince": "Mitglied seit",
+    "emailChange": "Ändern",
+    "emailSave": "Speichern",
+    "emailCancel": "Abbrechen",
+    "emailBusy": "Speichere…",
+    "emailPending": "Bestätigungslink an {email} gesendet. Klicke darauf um die Änderung abzuschließen.",
+    "emailError": "Änderung fehlgeschlagen",
+    "emailSameError": "Neue E-Mail ist identisch mit der aktuellen.",
+    "emailInvalidError": "Ungültige E-Mail-Adresse.",
+    "themeDark": "Dunkel",
+    "themeLight": "Hell",
+    "dangerText": "Entfernt deinen Account, alle Plattform-Verbindungen und gemeldeten Profile. Nicht umkehrbar.",
+    "signOut": "Abmelden",
+    "signOutBusy": "Wird abgemeldet…",
+    "deleteButton": "Account löschen",
+    "deleteConfirm": "Wirklich löschen? Diese Aktion ist endgültig.",
+    "deleteYes": "Ja, löschen",
+    "deleteBusy": "Wird gelöscht…",
+    "deleteCancel": "Abbrechen",
+    "deleteError": "Löschung fehlgeschlagen"
+  },
+  "DeleteAccount": {
+    "button": "Account löschen",
+    "confirmPrompt": "Tippe DELETE um zu bestätigen:",
+    "confirmWord": "DELETE",
+    "deleting": "Lösche…",
+    "errorTitle": "Löschen fehlgeschlagen",
+    "errorFallback": "Bitte versuche es erneut oder kontaktiere support@prooved.xyz."
+  },
+  "ConnectPage": {
+    "metaTitle": "Plattformen verknüpfen — Prooved",
+    "h1": "Plattformen verknüpfen",
+    "subline": "Wähle eine Plattform um deine Bewertungen zu verifizieren."
+  },
+  "ConnectFlow": {
+    "metaTitlePrefix": "{platform} verknüpfen — Prooved",
+    "backToConnect": "← Zurück zu Plattformen",
+    "step": "Schritt {n} von {total}",
+    "startVerification": "Verifizierung starten",
+    "verify": "Verifizieren",
+    "verifying": "Verifiziere…",
+    "openProfile": "Profil öffnen",
+    "copyCode": "Code kopieren",
+    "codeCopied": "Code kopiert",
+    "copyError": "Konnte nicht kopieren",
+    "alreadyConnected": "Bereits verknüpft",
+    "tierGold": "Gold-Tier",
+    "tierSilver": "Silver-Tier",
+    "tierBronze": "Bronze-Tier",
+    "oauthCta": "Mit {platform} verbinden",
+    "oauthRedirect": "Du wirst zu {platform} weitergeleitet.",
+    "bioCodeIntro": "Setze diesen Code in deine {platform}-Profilbeschreibung. Wir prüfen einmalig und entfernen den Code wieder.",
+    "bioCodeUrlLabel": "Dein {platform}-Profil-Link",
+    "bioCodeUrlPlaceholder": "z. B. https://www.{platform}.de/profil/maxmustermann",
+    "bioCodeError": "Verifizierung fehlgeschlagen. Stelle sicher, dass der Code in deiner Bio steht.",
+    "bioCodeSuccess": "{platform} verifiziert."
+  },
+  "ProfilePage": {
+    "metaNotFound": "Profil nicht gefunden — Prooved",
+    "metaSuspended": "Profil gesperrt — Prooved",
+    "metaTitleSuffix": "{name} — Prooved",
+    "metaDescription": "Verifizierte Marketplace-Reputation von {name}",
+    "ogTitle": "{name} auf Prooved",
+    "ogDescription": "{count} verifizierte Plattformen",
+    "suspendedTitle": "Profil gesperrt",
+    "suspendedText": "Dieses Profil wurde wegen Verstoß gegen unsere Richtlinien gesperrt."
+  },
+  "PublicProfile": {
+    "since": "seit {date}",
+    "verifiedSuffix": "{platform}-verifiziert",
+    "platformsHeading": "Plattformen",
+    "noPlatforms": "Noch keine verifizierten Plattformen.",
+    "ratings": "Bewertungen",
+    "positive": "positiv",
+    "activeSince": "aktiv seit",
+    "active": "aktiv",
+    "warningQualityCap": "Bewertungs-Quote unter 70 % — Score auf Bronze begrenzt.",
+    "warningNameMismatch": "{count} verschiedene Klarnamen verknüpft.",
+    "hintOne": "Hinweis",
+    "hintMany": "Hinweise",
+    "scoreBreakdown": "Score-Breakdown",
+    "scoreFooter": "Berechnet aus deinen verifizierten Plattformen.",
+    "learnMore": "Mehr erfahren",
+    "report": "Profil melden",
+    "whatIsProoved": "Was ist Prooved?",
+    "privacy": "Datenschutz",
+    "terms": "AGB",
+    "imprint": "Impressum",
+    "poweredBy": "Powered by Prooved",
+    "yourProfile": "Dein Profil",
+    "dashboardLink": "Dashboard →",
+    "copyLink": "Profil-Link kopieren",
+    "linkCopied": "✓ Kopiert"
+  },
+  "ReportPage": {
+    "metaTitle": "Profil melden — Prooved",
+    "h1": "Profil \"{name}\" melden",
+    "subline": "Wir prüfen jede Meldung manuell. Spam-Schutz: max. 3 Meldungen pro IP / Tag."
+  },
+  "ReportForm": {
+    "reasonLabel": "Grund",
+    "reason": {
+      "fake_account": "Fake-Account",
+      "fraud": "Betrug bei Verkauf",
+      "wrong_identity": "Falsche Identität",
+      "other": "Sonstiges"
+    },
+    "evidenceLabel": "Beschreibung / Beweise (optional)",
+    "evidencePlaceholder": "Transaktionsnachweis, Screenshot-Link, etc.",
+    "submit": "Melden",
+    "submitting": "Sende…",
+    "errorPrefix": "Fehler: {status}",
+    "successText": "Danke. Deine Meldung wurde übermittelt und wird geprüft."
+  },
+  "ConnectionList": {
+    "loading": "Lade…",
+    "noProfile": "Kein Profil gefunden.",
+    "yourProfile": "Dein Profil",
+    "platforms": "Plattformen",
+    "active": "{count} aktiv",
+    "search": "Suche…",
+    "noConnections": "Noch keine Plattform verknüpft.",
+    "noConnectionsHint": "Verknüpfe eBay, PayPal, Vinted oder eine andere Plattform.",
+    "noResults": "Keine Treffer für „{query}\"",
+    "addPlatform": "Plattform hinzufügen",
+    "disconnectConfirm": "{platform} trennen?",
+    "unknownError": "Unbekannter Fehler",
+    "statusVerified": "verifiziert",
+    "statusExpiring": "läuft bald ab",
+    "statusExpired": "abgelaufen",
+    "statusPending": "ausstehend",
+    "statusUnavailable": "nicht verfügbar",
+    "chipHidden": "versteckt",
+    "chipPaused": "pausiert",
+    "fieldRating": "Bewertung",
+    "fieldVerified": "Verifiziert",
+    "fieldExpires": "Läuft ab",
+    "publicShowHeading": "Öffentlich zeigen",
+    "publicShowName": "Name \"{name}\"",
+    "publicShowPicture": "Profilbild",
+    "actionRefresh": "Aktualisieren",
+    "actionPaused": "Pausiert",
+    "actionResume": "Fortsetzen",
+    "actionPause": "Pausieren",
+    "actionShow": "Anzeigen",
+    "actionHide": "Verstecken",
+    "actionDisconnect": "Trennen",
+    "refreshError": "Refresh-Fehler: {message}"
+  },
+  "PlatformCard": {
+    "pending": "Ausstehend",
+    "verified": "Verifiziert",
+    "expiring": "Läuft ab",
+    "expired": "Abgelaufen",
+    "unavailable": "Vorübergehend nicht verfügbar",
+    "source": "Quelle: {platform}, verifiziert am {date}"
+  },
+  "PlatformGrid": {
+    "method": {
+      "oauth": "OAuth",
+      "bio_code": "Bio-Code",
+      "scrape": "Scan",
+      "domain_dns": "DNS",
+      "token": "API-Token"
+    }
+  },
+  "BioCodeFlow": {
+    "step1": "1. Kopier diesen Code",
+    "step1Hint": "Pack ihn auf {platform} in dein <b>{field}</b>.",
+    "copy": "kopieren",
+    "copied": "✓ kopiert",
+    "step2": "2. {platform}-URL hier einfügen",
+    "whereLink": "wo finde ich die?",
+    "hideHelp": "verbergen",
+    "hint": "Hinweis: {text}",
+    "urlSrLabel": "{platform}-URL",
+    "verify": "Verifizieren",
+    "verifying": "Prüfe…",
+    "codeFetchError": "Code-Abruf fehlgeschlagen",
+    "codeNotFound": "Code in deinem {field} noch nicht gefunden.",
+    "genericError": "Fehler"
+  },
+  "BioCodeFlowPlatforms": {
+    "vinted": {
+      "placeholder": "https://www.vinted.de/member/12345678-handle",
+      "bioField": "Über mich",
+      "step": {
+        "0": "Auf [vinted.de](https://www.vinted.de) oben rechts auf dein Profil-Bild klicken",
+        "1": "Profil aufrufen — Adresszeile-URL kopieren"
+      }
+    },
+    "kleinanzeigen": {
+      "placeholder": "https://www.kleinanzeigen.de/s-anzeige/...",
+      "bioField": "Anzeigen-Titel oder Beschreibung",
+      "prerequisite": "Kleinanzeigen-Profile haben kein Bio-Feld. Du brauchst mindestens eine aktive Anzeige — den Code packst du in deren Titel oder Beschreibung.",
+      "step": {
+        "0": "Auf [kleinanzeigen.de](https://www.kleinanzeigen.de) eingeloggt: oben „Meins\" → [Meine Anzeigen](https://www.kleinanzeigen.de/m-meine-anzeigen.html)",
+        "1": "Eine Anzeige öffnen (oder neue erstellen)",
+        "2": "Code unten in Titel oder Beschreibung einfügen — Anzeige speichern",
+        "3": "URL der Anzeige hier unten einfügen"
+      }
+    },
+    "discogs": {
+      "placeholder": "https://www.discogs.com/user/dein-username",
+      "bioField": "Profile-Beschreibung",
+      "step": {
+        "0": "Auf [discogs.com](https://www.discogs.com) einloggen → [User Settings](https://www.discogs.com/settings/user) öffnen",
+        "1": "Im Feld „Profile\" Code einfügen + „Save settings\"",
+        "2": "URL deines Profils kopieren (discogs.com/user/DEINUSERNAME)"
+      }
+    },
+    "willhaben": {
+      "placeholder": "https://www.willhaben.at/iad/seller-profile/...",
+      "bioField": "Verkäufer-Beschreibung",
+      "step": {
+        "0": "Auf [willhaben.at](https://www.willhaben.at) einloggen → „Mein willhaben\" → „Verkäuferprofil\"",
+        "1": "Beschreibung bearbeiten + Code einfügen + speichern",
+        "2": "URL deines Verkäufer-Profils kopieren (enthält /seller-profile/)"
+      }
+    },
+    "shpock": {
+      "placeholder": "https://www.shpock.com/de-de/i/...",
+      "bioField": "Anzeigen-Titel oder Beschreibung",
+      "prerequisite": "Shpock-Profile haben kein Bio-Feld. Du brauchst mindestens eine aktive Anzeige — den Code packst du in deren Titel oder Beschreibung.",
+      "step": {
+        "0": "Auf [shpock.com](https://www.shpock.com/de-de) einloggen → Plus-Button → Anzeige erstellen (oder bestehende öffnen)",
+        "1": "Code in Titel oder Beschreibung einfügen, Anzeige veröffentlichen",
+        "2": "URL der Anzeige kopieren (enthält /i/...)"
+      }
+    },
+    "reverb": {
+      "placeholder": "https://reverb.com/shop/dein-shop-slug",
+      "bioField": "Shop-Beschreibung",
+      "prerequisite": "Du brauchst einen Reverb-Shop (Verkäuferprofil).",
+      "step": {
+        "0": "Auf [reverb.com](https://reverb.com) einloggen → [Shop Settings](https://reverb.com/my/shop/edit) öffnen",
+        "1": "„About / Description\" Feld bearbeiten, Code einfügen, speichern",
+        "2": "Shop-URL kopieren (reverb.com/shop/DEIN-SLUG)"
+      }
+    }
+  },
+  "DomainVerifyFlow": {
+    "step1": "1. TXT-Record bei deinem DNS-Provider setzen",
+    "name": "Name:",
+    "nameValue": "@ (oder _prooved)",
+    "type": "Type:",
+    "value": "Value:",
+    "showHow": "wie geht das?",
+    "hideHow": "verbergen",
+    "examples": "Beispiele beim Provider:",
+    "providerIonos": "<b>IONOS / Strato</b>: Domains → Domain → DNS-Einstellungen",
+    "providerCloudflare": "<b>Cloudflare</b>: DNS → Records → Add record",
+    "providerGodaddy": "<b>GoDaddy</b>: My Domains → DNS → Records → Add",
+    "propagationHint": "DNS-Propagation kann bis zu 1h dauern.",
+    "step2": "2. Domain eingeben",
+    "domainPlaceholder": "example.de",
+    "step3": "3. Klick auf „Verifizieren\":",
+    "verify": "Verifizieren",
+    "verifying": "Prüfe DNS…",
+    "codeLoadError": "Code konnte nicht geladen werden",
+    "verifyFailed": "Verifizierung fehlgeschlagen",
+    "unknownError": "Unbekannter Fehler",
+    "loading": "Lade…"
+  },
+  "CustomVerifyFlow": {
+    "step1": "1. Kopier diesen Code",
+    "step1Hint": "Pack ihn auf der Plattform deiner Wahl in Profil-Bio, Anzeigen-Titel, Beschreibung oder Posting — Hauptsache öffentlich erreichbar.",
+    "copy": "kopieren",
+    "copied": "✓ kopiert",
+    "step2": "2. Plattform-Name + URL",
+    "labelQuestion": "Wie heißt die Plattform?",
+    "labelPlaceholder": "z.B. Booklooker, Mobile.de, Mein-Forum",
+    "urlLabel": "URL der Seite mit dem Code",
+    "urlPlaceholder": "https://www.example.com/dein-profil",
+    "urlHint": "Die Seite muss öffentlich (ohne Login) erreichbar sein. Wir lesen nur den HTML-Inhalt — keine Bewertungs-Daten werden extrahiert.",
+    "step3": "3. Verifizieren",
+    "verify": "Verifizieren",
+    "verifying": "Prüfe…",
+    "codeFetchError": "Code-Abruf fehlgeschlagen",
+    "codeNotFound": "Code in der URL nicht gefunden.",
+    "genericError": "Fehler",
+    "warning": "Hinweis: Custom-Plattform liefert keine Bewertungsdaten — nur Eigentums-Beweis. Trust-Score erhält Marktplatz-Punkte, aber kein Quality-Bonus. Dynamische SPAs (Facebook, Instagram, TikTok) funktionieren oft nicht — User müssen eine HTML-Seite mit sichtbarem Code haben."
+  },
+  "OAuthConnectButton": {
+    "connect": "Mit {platform} verknüpfen"
+  },
+  "TrustScoreCard": {
+    "title": "Trust-Score",
+    "qualityCap": "⚠ Quote unter 70 % — Score auf Bronze begrenzt.",
+    "showDetails": "Details anzeigen",
+    "hideDetails": "Details verbergen"
+  },
+  "AvatarSettings": {
+    "title": "Profilbild",
+    "preview": "Vorschau",
+    "auto": "Auto",
+    "initials": "Initialen",
+    "none": "Keins",
+    "saving": "speichert…",
+    "noSources": "Verknüpfe PayPal, LinkedIn oder GitHub um deren Profilbild nutzen zu können.",
+    "updateFailed": "Update fehlgeschlagen"
+  },
+  "PlatformLink": {
+    "open": "Auf {platform} ansehen",
+    "openExternal": "Externer Link"
+  },
+  "ExportButton": {
+    "label": "Daten exportieren als JSON",
+    "busy": "Erstelle…",
+    "error": "Export fehlgeschlagen: {status}",
+    "unknownError": "Fehler"
+  },
+  "ActivityLog": {
+    "title": "Aktivität",
+    "kind": {
+      "connection_added": "verknüpft",
+      "connection_removed": "getrennt",
+      "connection_refreshed": "aktualisiert",
+      "connection_hidden": "versteckt",
+      "connection_shown": "sichtbar",
+      "connection_paused": "pausiert",
+      "connection_resumed": "fortgesetzt",
+      "connection_field_toggled": "Anzeige geändert",
+      "rating_drop_detected": "Bewertung gefallen",
+      "login": "eingeloggt",
+      "profile_updated": "aktualisiert",
+      "wallet_connected": "Wallet verbunden",
+      "wallet_disconnected": "Wallet getrennt",
+      "export_generated": "Export erstellt"
+    },
+    "justNow": "gerade eben",
+    "minAgo": "vor {n} min",
+    "hAgo": "vor {n} h",
+    "daysAgo": "vor {n} Tagen",
+    "less": "weniger",
+    "showAll": "alle {n} anzeigen"
+  },
+  "WalletConnect": {
+    "verify": "Wallet verifizieren",
+    "verifying": "Verifiziere…",
+    "notConnected": "Wallet nicht verbunden",
+    "nonceFailed": "Nonce konnte nicht geladen werden: {status}",
+    "verifyFailed": "Verify fehlgeschlagen: {status}",
+    "genericError": "Fehler"
+  },
+  "ExpiryWarning": {
+    "expiresIn": "läuft ab in {days} Tagen",
+    "expiresToday": "läuft heute ab",
+    "expired": "abgelaufen",
+    "renew": "Erneuern"
+  },
+  "SlugOnboarding": {
+    "title": "Profil einrichten",
+    "intro": "Wähle deine Profil-Adresse. Sie ist später nicht mehr änderbar.",
+    "nameLabel": "Anzeigename (optional)",
+    "namePlaceholder": "Max Mustermann",
+    "nameMinError": "Mindestens 2 Zeichen",
+    "slugLabel": "Profil-Adresse",
+    "slugPrefix": "prooved.xyz/",
+    "slugPlaceholder": "max-mustermann",
+    "submit": "Profil anlegen",
+    "submitting": "Lege an…",
+    "statusInvalid": "Ungültig — nur a-z, 0-9, Bindestrich",
+    "statusReserved": "Reserviert",
+    "statusChecking": "Prüfe…",
+    "statusAvailable": "✓ Verfügbar",
+    "statusTaken": "Bereits vergeben",
+    "statusError": "Verfügbarkeit nicht prüfbar",
+    "errorTaken": "Dieser Name ist bereits vergeben",
+    "errorCreate": "Fehler beim Anlegen"
+  },
+  "Register": {
+    "title": "Anmelden",
+    "intro": "Magic Link per E-Mail. Kein Passwort.",
+    "emailLabel": "E-Mail",
+    "emailPlaceholder": "du@beispiel.de",
+    "submit": "Magic Link senden",
+    "submitting": "Sende…",
+    "sentTitle": "Magic Link verschickt",
+    "sentText": "Schau in dein E-Mail-Postfach.",
+    "resend": "Erneut senden",
+    "errorInvalid": "Ungültige E-Mail-Adresse",
+    "errorGeneric": "Unbekannter Fehler",
+    "tryAgain": "Erneut versuchen"
+  },
+  "ThemeToggle": {
+    "switchToLight": "Hell-Modus aktivieren",
+    "switchToDark": "Dunkel-Modus aktivieren",
+    "labelLight": "Hell-Modus",
+    "labelDark": "Dunkel-Modus"
+  },
+  "Logo": {
+    "alt": "Prooved Logo"
+  },
+  "SlugSchema": {
+    "minError": "Mindestens 3 Zeichen",
+    "maxError": "Maximal 32 Zeichen",
+    "regexError": "Nur a-z, 0-9 und Bindestrich. Kein Bindestrich am Anfang/Ende.",
+    "reservedError": "Dieser Name ist reserviert"
+  },
+  "Platforms": {
+    "ebay": "eBay",
+    "paypal": "PayPal",
+    "vinted": "Vinted",
+    "kleinanzeigen": "Kleinanzeigen",
+    "etsy": "Etsy",
+    "willhaben": "Willhaben",
+    "github": "GitHub",
+    "linkedin": "LinkedIn",
+    "facebook": "Facebook",
+    "discogs": "Discogs",
+    "shpock": "Shpock",
+    "reverb": "Reverb",
+    "website": "Eigene Website",
+    "custom": "Andere Plattform"
+  },
+  "ConnectPlatform": {
+    "back": "← Zurück",
+    "ebay": {
+      "title": "eBay verknüpfen",
+      "subline": "Gold-Tier · OAuth. Du wirst zu eBay weitergeleitet, wir holen FeedbackScore über die Trading API."
+    },
+    "paypal": {
+      "title": "PayPal verknüpfen",
+      "subline": "Gold-Tier · OAuth. Wir holen nur Identitätsstatus, keine Transaktionsdaten."
+    },
+    "etsy": {
+      "title": "Etsy verknüpfen",
+      "subline": "Gold-Tier · OAuth. Wir holen Bewertungs-Schnitt + Anzahl deines Shops via Etsy API v3."
+    },
+    "github": {
+      "title": "GitHub verknüpfen",
+      "subline": "Silver-Tier · OAuth. Beweist Account-Alter, Aktivität und (falls gesetzt) verifizierten Klarnamen."
+    },
+    "linkedin": {
+      "title": "LinkedIn verknüpfen",
+      "subline": "Gold-Tier · OAuth. Trust-Signal: verifizierter Klarname (KYC-grade)."
+    },
+    "facebook": {
+      "title": "Facebook verknüpfen",
+      "subline": "Silver-Tier · OAuth. Beweist Identität (verifizierter Name + E-Mail). Marketplace-Bewertungen liefert Meta nicht via API."
+    },
+    "vinted": {
+      "title": "Vinted verknüpfen",
+      "subline": "Silver-Tier · Bio-Code · 30 Tage gültig."
+    },
+    "kleinanzeigen": {
+      "title": "Kleinanzeigen verknüpfen",
+      "subline": "Silver-Tier · Bio-Code · 30 Tage gültig. Keine offizielle API — bei Layout-Änderung kann die Verifikation kurz auf „nicht verfügbar\" springen."
+    },
+    "willhaben": {
+      "title": "Willhaben verknüpfen",
+      "subline": "Silver-Tier · Bio-Code in Verkäufer-Beschreibung. AT-Markt."
+    },
+    "discogs": {
+      "title": "Discogs verknüpfen",
+      "subline": "Silver-Tier · Bio-Code in Profil-Beschreibung. 30 Tage gültig."
+    },
+    "shpock": {
+      "title": "Shpock verknüpfen",
+      "subline": "Silver-Tier · Bio-Code in About-Section."
+    },
+    "reverb": {
+      "title": "Reverb verknüpfen",
+      "subline": "Silver-Tier · Bio-Code in Shop-Beschreibung. 30 Tage gültig."
+    },
+    "website": {
+      "title": "Eigene Website verknüpfen",
+      "subline": "Silver-Tier · DNS-TXT-Record. Beweist dass dir die Domain gehört."
+    },
+    "custom": {
+      "title": "Andere Plattform verknüpfen",
+      "subline": "Silver-Tier · Bio-Code auf beliebiger Seite. Beweist Eigentum, ohne Bewertungs-Daten zu lesen."
+    }
+  }
+}

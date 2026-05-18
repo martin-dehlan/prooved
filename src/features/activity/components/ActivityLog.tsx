@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { PLATFORM_LABELS } from '@/shared/types/platform.types';
 
 type Kind =
@@ -27,34 +28,9 @@ interface Event {
   created_at: string;
 }
 
-const KIND_LABEL: Record<Kind, string> = {
-  connection_added: 'verknüpft',
-  connection_removed: 'getrennt',
-  connection_refreshed: 'aktualisiert',
-  connection_hidden: 'versteckt',
-  connection_shown: 'sichtbar',
-  connection_paused: 'pausiert',
-  connection_resumed: 'fortgesetzt',
-  connection_field_toggled: 'Anzeige geändert',
-  rating_drop_detected: 'Bewertung gefallen',
-  login: 'eingeloggt',
-  profile_updated: 'aktualisiert',
-  wallet_connected: 'Wallet verbunden',
-  wallet_disconnected: 'Wallet getrennt',
-  export_generated: 'Export erstellt',
-};
-
-function formatRelative(iso: string): string {
-  const d = new Date(iso).getTime();
-  const diff = (Date.now() - d) / 1000;
-  if (diff < 60) return 'gerade eben';
-  if (diff < 3600) return `vor ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `vor ${Math.floor(diff / 3600)} h`;
-  if (diff < 7 * 86400) return `vor ${Math.floor(diff / 86400)} Tagen`;
-  return new Date(iso).toLocaleDateString('de-DE');
-}
-
 export function ActivityLog() {
+  const t = useTranslations('ActivityLog');
+  const locale = useLocale();
   const [events, setEvents] = useState<Event[] | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -65,6 +41,16 @@ export function ActivityLog() {
       .catch(() => setEvents([]));
   }, []);
 
+  function formatRelative(iso: string): string {
+    const d = new Date(iso).getTime();
+    const diff = (Date.now() - d) / 1000;
+    if (diff < 60) return t('justNow');
+    if (diff < 3600) return t('minAgo', { n: Math.floor(diff / 60) });
+    if (diff < 86400) return t('hAgo', { n: Math.floor(diff / 3600) });
+    if (diff < 7 * 86400) return t('daysAgo', { n: Math.floor(diff / 86400) });
+    return new Date(iso).toLocaleDateString(locale === 'en' ? 'en-US' : 'de-DE');
+  }
+
   if (!events || events.length === 0) return null;
 
   const visible = open ? events : events.slice(0, 5);
@@ -73,7 +59,7 @@ export function ActivityLog() {
     <section className="space-y-2">
       <header className="flex items-baseline justify-between">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-          Aktivität
+          {t('title')}
         </h2>
         <span className="text-xs text-muted tabular-nums">{events.length}</span>
       </header>
@@ -83,6 +69,7 @@ export function ActivityLog() {
             ? PLATFORM_LABELS[e.platform as keyof typeof PLATFORM_LABELS] ?? e.platform
             : null;
           const isWarn = e.kind === 'rating_drop_detected';
+          const kindKey = `kind.${e.kind}` as const;
           return (
             <li
               key={e.id}
@@ -95,7 +82,7 @@ export function ActivityLog() {
                   </span>
                 )}
                 <span className={isWarn ? 'text-warning' : 'text-muted'}>
-                  {KIND_LABEL[e.kind] ?? e.kind}
+                  {t.has(kindKey) ? t(kindKey) : e.kind}
                 </span>
               </span>
               <span className="shrink-0 text-muted tabular-nums">
@@ -111,7 +98,7 @@ export function ActivityLog() {
           onClick={() => setOpen((v) => !v)}
           className="text-[11px] text-muted underline-offset-2 hover:text-text hover:underline"
         >
-          {open ? 'weniger' : `alle ${events.length} anzeigen`}
+          {open ? t('less') : t('showAll', { n: events.length })}
         </button>
       )}
     </section>
