@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 
 const REPO_URL = 'https://github.com/martin-dehlan/prooved';
 
@@ -58,6 +59,17 @@ export async function TrustSection() {
           <li>· {t('oneClickDelete')}</li>
         </ul>
       </div>
+
+      <Link
+        href="/security"
+        className="flex items-center justify-between rounded-xl border border-elevated bg-surface px-4 py-3 text-sm text-text transition hover:border-text/40"
+      >
+        <span className="flex items-center gap-2">
+          <ShieldCheck size={16} aria-hidden />
+          <span className="font-semibold">{t('securityTitle')}</span>
+        </span>
+        <span className="text-xs text-muted">{t('securityCta')}</span>
+      </Link>
     </section>
   );
 }
