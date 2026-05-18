@@ -1,0 +1,6 @@
+Contact: mailto:security@prooved.xyz
+Contact: mailto:martindehlan@gmail.com
+Expires: 2027-05-18T18:00:00.000Z
+Preferred-Languages: de, en
+Canonical: https://prooved.xyz/.well-known/security.txt
+Policy: https://github.com/martin-dehlan/prooved/blob/main/SECURITY.md
