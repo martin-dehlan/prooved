@@ -41,8 +41,12 @@ function applyHeaders(res: NextResponse): NextResponse {
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  // /api + /auth are not localized — skip locale routing, still apply security headers.
-  if (pathname.startsWith('/api') || pathname.startsWith('/auth')) {
+  // /api + /auth + /.well-known are not localized — skip locale routing, still apply security headers.
+  if (
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/.well-known')
+  ) {
     return applyHeaders(NextResponse.next());
   }
   return applyHeaders(intlMiddleware(req) as NextResponse);
