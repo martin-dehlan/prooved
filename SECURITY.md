@@ -8,8 +8,7 @@ We take the security of Prooved seriously. If you believe you've found a securit
 
 Instead, email us at:
 
-- `security@prooved.xyz` (preferred)
-- `martindehlan@gmail.com` (fallback)
+- `security@prooved.xyz`
 
 Include in your report:
 
