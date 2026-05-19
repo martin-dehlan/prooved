@@ -91,6 +91,8 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "imprint": "Imprint",
+    "security": "Security",
+    "euHostedBadge": "EU-Hosted",
     "copyright": "© {year} Prooved"
   },
   "LanguageSwitcher": {
