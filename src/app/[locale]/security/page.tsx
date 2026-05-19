@@ -9,6 +9,8 @@ import { LegalFooter } from '@/shared/components/LegalFooter';
 const REPO_URL = 'https://github.com/martin-dehlan/prooved';
 const HARDENIZE_URL = 'https://www.hardenize.com/report/prooved.xyz';
 const SCORECARD_URL = 'https://scorecard.dev/viewer/?uri=github.com/martin-dehlan/prooved';
+const OPENSSF_URL = 'https://www.bestpractices.dev/projects/12901';
+const OPENSSF_BADGE = 'https://www.bestpractices.dev/projects/12901/badge';
 const SECURITY_TXT = 'https://prooved.xyz/.well-known/security.txt';
 const SECURITY_MD = 'https://github.com/martin-dehlan/prooved/blob/main/SECURITY.md';
 
@@ -74,7 +76,29 @@ export default async function SecurityPage() {
         <h1 className="text-3xl font-bold tracking-tight text-text">{t('h1')}</h1>
         <p className="mt-3 text-base text-muted">{t('intro')}</p>
 
+        <a
+          href={OPENSSF_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 inline-block transition hover:opacity-80"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={OPENSSF_BADGE}
+            alt="OpenSSF Best Practices passing"
+            height={20}
+          />
+        </a>
+
         <div className="mt-8 space-y-3">
+          <Row
+            href={OPENSSF_URL}
+            external
+            icon={<ShieldCheck size={18} aria-hidden />}
+            title={t('openssfTitle')}
+            text={t('openssfText')}
+            cta={t('openssfCta')}
+          />
           <Row
             href={HARDENIZE_URL}
             external

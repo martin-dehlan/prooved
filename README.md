@@ -1,5 +1,9 @@
 # Prooved
 
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12901/badge)](https://www.bestpractices.dev/projects/12901)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/martin-dehlan/prooved/badge)](https://scorecard.dev/viewer/?uri=github.com/martin-dehlan/prooved)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Web-App die es Privatverkäufern auf Marktplätzen ermöglicht, ihre Reputation von
 mehreren Plattformen (eBay, Vinted, Kleinanzeigen, PayPal) an einem Ort zu bündeln
 und als verifizierten, teilbaren Link zu teilen.
