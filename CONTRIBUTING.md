@@ -60,9 +60,23 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
 ```bash
 npm run lint        # ESLint
 npx tsc --noEmit    # Type-check
+npm test            # Run the Vitest suite
 ```
 
 If you change DB schema or RLS, also run the Supabase migrations locally.
+
+## Testing Policy
+
+Every pull request that adds major new functionality MUST include automated tests for that functionality. Specifically:
+
+- **New utility functions or business logic** (anything under `src/shared/lib/`): unit tests in a co-located `*.test.ts` file are required.
+- **New API routes** (`src/app/api/`): a happy-path test plus at least one error-path test for the route handler.
+- **New validation schemas** (Zod): tests covering both accept and reject cases.
+- **Security-relevant changes** (auth flow, bio-code generation, signed exports, rate limits): tests are required even for small changes.
+
+Bug fixes SHOULD include a regression test that fails before the fix and passes after.
+
+Tests run automatically on every push and pull request via [`.github/workflows/test.yml`](./.github/workflows/test.yml). A PR that lowers test coverage in security-sensitive code will not be merged.
 
 ## Pull Request Requirements
 
